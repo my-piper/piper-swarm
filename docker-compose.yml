@@ -1,0 +1,42 @@
+---
+
+version: "3.8"
+
+volumes:
+  mongo-data:
+    external: true
+  redis-data:
+    external: true
+  storage-data:
+    external: true
+
+services:
+  piper:
+    image: registry.gitlab.com/realistic-ai/piper
+    volumes:
+      - storage-data:/app/storage
+
+  mongo:
+    image: mongo
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis/redis-stack
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
+  nginx:
+    image: nginx:1.25.2
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - storage-data:/var/www/storage:ro
+    ports:
+      - "80:80"
+    healthcheck:
+      test: service nginx status || exit 1
+      interval: 2s
+      retries: 10
+      start_period: 5s
+      timeout: 5s

@@ -1,0 +1,9 @@
+**/node_modules
+**/.angular
+**/.idea
+**/.vscode
+**/.env
+**/dist
+**/cache
+**/tmp
+**/.DS_Store
