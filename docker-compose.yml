@@ -12,7 +12,7 @@ volumes:
 
 services:
   piper:
-    image: registry.gitlab.com/realistic-ai/piper
+    image: registry.gitlab.com/realistic-ai/piper:1265087381
     volumes:
       - storage-data:/app/storage
 
