@@ -12,9 +12,13 @@ volumes:
 
 services:
   piper:
-    image: registry.gitlab.com/realistic-ai/piper:1265146430
+    image: registry.gitlab.com/realistic-ai/piper:1282014227
     volumes:
       - storage-data:/app/storage
+    environment:
+      - ENV_MODE=prod
+      - MONGO_URL=mongodb://mongo:27017
+      - REDIS_URL=redis://redis:6379/
 
   mongo:
     image: mongo
