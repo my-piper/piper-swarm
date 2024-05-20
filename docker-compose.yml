@@ -31,7 +31,7 @@ services:
         order: start-first
 
   worker:
-    image: registry.gitlab.com/generative-core/piper/fullstack${PIPER_IMAGE_TAG}
+    image: registry.gitlab.com/generative-core/piper/fullstack:${PIPER_IMAGE_TAG}
     env_file:
       - ./config/piper.env
     volumes:
