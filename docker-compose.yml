@@ -17,6 +17,8 @@ services:
       - ./config/piper.env
     volumes:
       - storage-data:/app/storage
+    ports:
+      - "8080:8080"
     healthcheck:
       test: curl --fail http://localhost:8080/ || exit 1
       interval: 60s
@@ -36,6 +38,8 @@ services:
       - ./config/piper.env
     volumes:
       - storage-data:/app/storage
+    ports:
+      - "8081:8081"
     command: npm run worker
     healthcheck:
       test: curl --fail http://localhost:8081/ || exit 1
