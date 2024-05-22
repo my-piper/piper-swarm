@@ -1,0 +1,24 @@
+abreslavsky@production:/opt/pron/devops$ cat config/mysql/pron.cnf
+[mysqld]
+long_query_time=2
+max_connections=100
+sort_buffer_size=160M
+binlog-expire-logs-seconds=86400
+wait_timeout=120
+interactive_timeout=120
+key_buffer_size=0
+#read_rnd_buffer_size=300K
+
+innodb_buffer_pool_size=1500M
+innodb_redo_log_capacity=384M
+innodb_buffer_pool_chunk_size=64M
+innodb_buffer_pool_instances=1
+innodb_log_file_size=256M
+innodb_flush_log_at_trx_commit=1
+#innodb_flush_method=O_DIRECT
+join_buffer_size=257K
+innodb_log_buffer_size=20M
+
+gtid_mode=ON
+enforce-gtid-consistency=ON
+server_id=1
