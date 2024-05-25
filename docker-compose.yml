@@ -18,7 +18,7 @@ services:
     volumes:
       - storage-data:/app/storage
     healthcheck:
-      test: curl --fail http://localhost/ || exit 1
+      test: curl --fail http://localhost/health || exit 1
       interval: 60s
       retries: 5
       start_period: 10s
@@ -38,6 +38,12 @@ services:
       - storage-data:/app/storage
     working_dir: /app/backend
     command: npm run worker
+    healthcheck:
+      test: curl --fail http://localhost/health || exit 1
+      interval: 60s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
     deploy:
       replicas: 5
       update_config:
@@ -74,6 +80,13 @@ services:
       retries: 10
       start_period: 5s
       timeout: 5s
+
+  imgproxy:
+    image: darthsim/imgproxy:v3.18.2
+    environment:
+      - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/data
+    volumes:
+      - ./storage:/data/storage:ro
 
   mysql:
     image: mysql:8.0.33
