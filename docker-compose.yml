@@ -86,7 +86,7 @@ services:
     environment:
       - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/data
     volumes:
-      - ./storage:/data/storage:ro
+      - storage-data:/data/storage:ro
 
   mysql:
     image: mysql:8.0.33
