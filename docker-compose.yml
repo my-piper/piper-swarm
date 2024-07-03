@@ -9,6 +9,7 @@ volumes:
     external: true
   storage-data:
     external: true
+  prometheus-data:
 
 services:
   backend:
@@ -45,6 +46,8 @@ services:
       start_period: 10s
       timeout: 10s
     deploy:
+      labels:
+        - "prometheus-job=worker"
       replicas: 5
       update_config:
         parallelism: 1
@@ -52,15 +55,14 @@ services:
         order: start-first
 
   mongo:
-    image: mongo
+    image: mongo:7.0.11
     volumes:
       - mongo-data:/data/db
     ports:
       - "27017:27017"
 
   redis:
-    image: redis/redis-stack
-    restart: unless-stopped
+    image: redis/redis-stack:7.2.0-v11
     volumes:
       - redis-data:/data
     ports:
@@ -86,7 +88,7 @@ services:
     environment:
       - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/data
     volumes:
-      - ./storage:/data/storage:ro
+      - storage-data:/data/storage:ro
 
   mysql:
     image: mysql:8.0.33
@@ -110,3 +112,52 @@ services:
     volumes:
       - ${WORDPRESS_VOLUME}:/var/www/html
       - ./config/wordpress/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
+
+  exporter-node:
+    image: quay.io/prometheus/node-exporter:v1.6.1
+    volumes:
+      - /:/host:ro,rslave
+    command:
+      - "--path.rootfs=/host"
+      - "--collector.filesystem.mount-points-exclude=^/(etc|boot|run|dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($$|/)"
+    ports:
+      - "9100:9100"
+    deploy:
+      mode: global
+
+  exporter-redis:
+    image: oliver006/redis_exporter:v1.54.0
+    ports:
+      - "9121:9121"
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    volumes:
+      - ./config/promtail/config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers
+    env_file:
+      - config/promtail/promtail.env
+    command:
+      [
+        "-config.file=/etc/promtail/config.yml",
+        "-config.expand-env=true"
+      ]
+    deploy:
+      mode: global
+
+  prometheus:
+    image: prom/prometheus:v2.44.0
+    user: root
+    ports:
+      - "9090:9090"
+    command:
+      - '--web.enable-admin-api'
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=4w'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      -  prometheus-data:/prometheus/data
+      - /var/run/docker.sock:/var/run/docker.sock
