@@ -54,6 +54,21 @@ services:
         delay: 5s
         order: start-first
 
+  periodic:
+    image: registry.gitlab.com/generative-core/piper/fullstack:${PIPER_IMAGE_TAG}
+    env_file:
+      - ./config/piper.env
+    volumes:
+      - storage-data:/app/storage
+    working_dir: /app/backend
+    command: npm run periodic
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 5s
+        order: start-first
+
   mongo:
     image: mongo:7.0.11
     volumes:
