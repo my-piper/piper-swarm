@@ -19,3 +19,13 @@ scrape_configs:
       # Use the prometheus-job Swarm label as Prometheus job label.
       - source_labels: [__meta_dockerswarm_service_label_prometheus_job]
         target_label: job
+
+  - job_name: redis
+    static_configs:
+      - targets:
+          - exporter-redis:9121 # redis
+        labels:
+          env: production
+          type: infrastructure
+          app: piper
+

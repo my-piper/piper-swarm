@@ -83,6 +83,11 @@ services:
     ports:
       - "6379:6379"
 
+  exporter-redis:
+    image: oliver006/redis_exporter:v1.54.0
+    env_file:
+      - ./config/exporter_redis.env
+
   nginx:
     image: nginx:1.25.2
     volumes:
@@ -139,11 +144,6 @@ services:
       - "9100:9100"
     deploy:
       mode: global
-
-  exporter-redis:
-    image: oliver006/redis_exporter:v1.54.0
-    ports:
-      - "9121:9121"
 
   promtail:
     image: grafana/promtail:2.9.0
