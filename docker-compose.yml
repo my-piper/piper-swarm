@@ -7,6 +7,12 @@ volumes:
     external: true
   redis-data:
     external: true
+  kafka-data:
+    external: true
+  clickhouse-data:
+    external: true
+  clickhouse-logs:
+    external: true
   storage-data:
     external: true
   prometheus-data:
@@ -102,6 +108,44 @@ services:
     image: oliver006/redis_exporter:v1.54.0
     env_file:
       - ./config/exporter_redis.env
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8.4
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - clickhouse-logs:/val/log/clickhouse-server
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+  kafka:
+    image: confluentinc/cp-kafka:7.7.1
+    ports:
+      - 9094:9094
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - CLUSTER_ID=45vUBEgyQjSywv_811biQw
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_BROKER_ID=1
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT
+      - KAFKA_ADVERTISED_LISTENERS=EXTERNAL://localhost:9094,INTERNAL://kafka:9092
+      - KAFKA_LISTENERS=CONTROLLER://kafka:9093,EXTERNAL://0.0.0.0:9094,INTERNAL://kafka:9092
+      - KAFKA_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_NODE_ID=1
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS=0
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
 
   nginx:
     image: nginx:1.25.2
