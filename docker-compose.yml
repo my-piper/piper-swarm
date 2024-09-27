@@ -54,7 +54,7 @@ services:
     deploy:
       labels:
         - "prometheus-job=worker"
-      replicas: 5
+      replicas: 2
       update_config:
         parallelism: 1
         delay: 5s
