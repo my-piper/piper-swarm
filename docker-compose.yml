@@ -17,9 +17,15 @@ volumes:
     external: true
   prometheus-data:
 
+networks:
+  monitoring:
+
 services:
   backend:
     image: registry.gitlab.com/generative-core/piper/fullstack:${PIPER_IMAGE_TAG}
+    networks:
+      - monitoring
+      - default   
     env_file:
       - ./config/piper.env
     volumes:
@@ -39,6 +45,9 @@ services:
 
   worker:
     image: registry.gitlab.com/generative-core/piper/fullstack:${PIPER_IMAGE_TAG}
+    networks:
+      - monitoring
+      - default   
     env_file:
       - ./config/piper.env
     volumes:
@@ -53,7 +62,11 @@ services:
       timeout: 10s
     deploy:
       labels:
-        - "prometheus-job=worker"
+        - "prometheus-port=5555"
+        - "prometheus-job=piper-worker"
+      resources:
+        limits:
+          memory: 4G
       replicas: 2
       update_config:
         parallelism: 1
@@ -62,6 +75,9 @@ services:
 
   periodic:
     image: registry.gitlab.com/generative-core/piper/fullstack:${PIPER_IMAGE_TAG}
+    networks:
+      - monitoring
+      - default
     env_file:
       - ./config/piper.env
     volumes:
@@ -77,6 +93,9 @@ services:
 
   sockets:
     image: registry.gitlab.com/generative-core/piper/fullstack:${PIPER_IMAGE_TAG}
+    networks:
+      - monitoring
+      - default
     env_file:
       - ./config/piper.env
     volumes:
@@ -92,6 +111,9 @@ services:
 
   mongo:
     image: mongo:7.0.11
+    networks:
+      - monitoring
+      - default
     volumes:
       - mongo-data:/data/db
     ports:
@@ -103,11 +125,6 @@ services:
       - redis-data:/data
     ports:
       - "6379:6379"
-
-  exporter-redis:
-    image: oliver006/redis_exporter:v1.54.0
-    env_file:
-      - ./config/exporter_redis.env
 
   clickhouse:
     image: clickhouse/clickhouse-server:24.8.4
@@ -160,18 +177,7 @@ services:
     volumes:
       - storage-data:/data/storage:ro
 
-  exporter-node:
-    image: quay.io/prometheus/node-exporter:v1.6.1
-    volumes:
-      - /:/host:ro,rslave
-    command:
-      - "--path.rootfs=/host"
-      - "--collector.filesystem.mount-points-exclude=^/(etc|boot|run|dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($$|/)"
-    ports:
-      - "9100:9100"
-    deploy:
-      mode: global
-
+  # -- monitoring --
   promtail:
     image: grafana/promtail:2.9.0
     volumes:
@@ -193,13 +199,70 @@ services:
     user: root
     ports:
       - "9090:9090"
+    networks:
+      - monitoring
     command:
       - '--web.enable-admin-api'
       - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.retention.time=4w'
+      - '--storage.tsdb.retention.time=2w'
       - '--web.console.libraries=/usr/share/prometheus/console_libraries'
       - '--web.console.templates=/usr/share/prometheus/consoles'
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       -  prometheus-data:/prometheus/data
       - /var/run/docker.sock:/var/run/docker.sock
+    
+  exporter-node:
+    image: quay.io/prometheus/node-exporter:v1.6.1
+    networks:
+      - monitoring
+    volumes:
+      - /:/host:ro,rslave
+    command:
+      - "--path.rootfs=/host"
+      - "--collector.filesystem.mount-points-exclude=^/(etc|boot|run|dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($$|/)"
+    ports:
+      - "9100:9100"
+    deploy:
+      mode: global
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    networks:
+      - monitoring
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    command:
+      - '-docker_only'
+    deploy:
+      mode: global
+      labels:
+         - "prometheus-port=8080"
+         - "prometheus-job=cadvisor"
+
+  exporter-redis:
+    image: oliver006/redis_exporter:v1.54.0
+    networks:
+      - monitoring
+      - default
+    env_file:
+      - ./config/exporter_redis.env
+    deploy:
+      labels:
+        - "prometheus-port=9121"
+        - "prometheus-job=redis"
+      
+  exporter-kafka:
+    image: danielqsj/kafka-exporter:v1.8.0
+    command: ["--kafka.server=kafka:9092"]
+    networks:
+      - default
+      - monitoring
+    deploy:
+      labels:
+        - "prometheus-job=kafka"
+        - "prometheus-port=9308"

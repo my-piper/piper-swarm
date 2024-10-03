@@ -6,7 +6,10 @@ positions:
   filename: /tmp/positions.yaml
 
 clients:
-  - url: http://10.20.0.3:3100/loki/api/v1/push
+  - url: https://logs.pornworks.ai/loki/api/v1/push
+    basic_auth:
+      username: worker
+      password: jGuH2T2quoFC4RV8
 
 scrape_configs:
   - job_name: backend
@@ -26,7 +29,7 @@ scrape_configs:
             #loggerName:
       - static_labels:
           env: ${ENV:-dev}
-          component: piper-backend
+          component: piper-xempire-backend
   - job_name: piper_worker
     docker_sd_configs:
       - host: unix:///var/run/docker.sock
@@ -44,5 +47,5 @@ scrape_configs:
             #loggerName:
       - static_labels:
           env: ${ENV:-dev}
-          component: piper-worker
+          component: piper-xempire-worker
 
