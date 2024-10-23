@@ -1,9 +1,8 @@
 global:
   scrape_interval: 10s
-  evaluation_interval: 15s
   external_labels:
-    env: ${ENV}
-    project: piper-xempire
+    env: %{ENV}
+    project: %{PROJECT}
 
 scrape_configs:
   - job_name: autodiscover
@@ -14,6 +13,9 @@ scrape_configs:
       - source_labels: [ __meta_dockerswarm_task_desired_state ]
         regex: running
         action: keep
+      - source_labels: [ __meta_dockerswarm_service_label_prometheus_job ]
+        regex: node
+        action: drop
       - source_labels: [ __meta_dockerswarm_network_name ]
         regex: piper_monitoring
         action: keep
@@ -44,8 +46,11 @@ scrape_configs:
       - source_labels: [ __meta_dockerswarm_network_name ]
         regex: piper_monitoring
         action: keep
-      - source_labels: [ __meta_dockerswarm_service_name ]
-        regex: piper_exporter-node
+      - source_labels: [ __meta_dockerswarm_service_label_prometheus_job ]
+        regex: node
         action: keep
-      - source_labels: [ __meta_dockerswarm_node_hostname ]
+      - source_labels: [ job ]
+        replacement: node
         target_label: job
+      - source_labels: [ __meta_dockerswarm_node_hostname ]
+        target_label: instance
