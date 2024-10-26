@@ -29,7 +29,7 @@ scrape_configs:
             #loggerName:
       - static_labels:
           env: ${ENV:-dev}
-          component: piper-xempire-backend
+          component: piper-zeptolab-backend
   - job_name: piper_worker
     docker_sd_configs:
       - host: unix:///var/run/docker.sock
@@ -47,5 +47,5 @@ scrape_configs:
             #loggerName:
       - static_labels:
           env: ${ENV:-dev}
-          component: piper-xempire-worker
+          component: piper-zeptolab-worker
 

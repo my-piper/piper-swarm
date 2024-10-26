@@ -241,8 +241,8 @@ services:
     networks:
       - monitoring
       - default
-    env_file:
-      - ./config/exporter_redis.env
+    environment:
+      - REDIS_ADDR=redis:6379
     deploy:
       labels:
         - "prometheus-port=9121"
