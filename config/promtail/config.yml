@@ -18,7 +18,7 @@ scrape_configs:
         refresh_interval: 15s
         filters:
           - name: label
-            values: ["com.docker.swarm.service.name=backend"]
+            values: ["com.docker.swarm.service.name=piper_backend"]
     pipeline_stages:
       - json:
           expressions:
@@ -36,7 +36,7 @@ scrape_configs:
         refresh_interval: 15s
         filters:
           - name: label
-            values: ["com.docker.swarm.service.name=worker"]
+            values: ["com.docker.swarm.service.name=piper_worker"]
     pipeline_stages:
       - json:
           expressions:
