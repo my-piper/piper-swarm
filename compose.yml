@@ -1,5 +1,12 @@
 ---
 
+x-piper: &piper
+  image: registry.gitlab.com/generative-core/piper/fullstack:${PIPER_IMAGE_TAG}
+  env_file:
+    - ./config/piper.env
+  volumes:
+    - storage-data:/app/storage
+  
 volumes:
   mongo-data:
   redis-data:
@@ -13,17 +20,20 @@ volumes:
 networks:
   monitoring:
     driver: overlay
+  backend:
+    driver: overlay
+  database:
+    driver: overlay
+  ingress:
+    driver: overlay
 
 services:
   backend:
-    image: registry.gitlab.com/generative-core/piper/fullstack:${PIPER_IMAGE_TAG}
+    <<: *piper
     networks:
       - monitoring
-      - default   
-    env_file:
-      - ./config/piper.env
-    volumes:
-      - storage-data:/app/storage
+      - database   
+      - ingress
     healthcheck:
       test: curl --fail http://localhost/health || exit 1
       interval: 60s
@@ -38,16 +48,12 @@ services:
         order: start-first
 
   worker:
-    image: registry.gitlab.com/generative-core/piper/fullstack:${PIPER_IMAGE_TAG}
+    <<: *piper
     networks:
       - monitoring
-      - default   
-    env_file:
-      - ./config/piper.env
-    volumes:
-      - storage-data:/app/storage
+      - database   
     working_dir: /app/backend
-    command: npm run worker
+    command: ["npm", "run", "worker"]
     healthcheck:
       test: curl --fail http://localhost:5555/metrics || exit 1
       interval: 60s
@@ -68,16 +74,12 @@ services:
         order: start-first
 
   periodic:
-    image: registry.gitlab.com/generative-core/piper/fullstack:${PIPER_IMAGE_TAG}
+    <<: *piper
     networks:
       - monitoring
-      - default
-    env_file:
-      - ./config/piper.env
-    volumes:
-      - storage-data:/app/storage
+      - database
     working_dir: /app/backend
-    command: npm run periodic
+    command: ["npm", "run", "periodic"]
     deploy:
       replicas: 1
       update_config:
@@ -86,16 +88,13 @@ services:
         order: start-first
 
   sockets:
-    image: registry.gitlab.com/generative-core/piper/fullstack:${PIPER_IMAGE_TAG}
+    <<: *piper
     networks:
       - monitoring
-      - default
-    env_file:
-      - ./config/piper.env
-    volumes:
-      - storage-data:/app/storage
+      - database
+      - ingress
     working_dir: /app/backend
-    command: npm run sockets
+    command: ["npm", "run", "sockets"]
     deploy:
       replicas: 1
       update_config:
@@ -106,7 +105,7 @@ services:
   mongo:
     image: mongo:7.0.11
     networks:
-      - default
+      - database
     volumes:
       - mongo-data:/data/db
     ports:
@@ -114,6 +113,8 @@ services:
 
   redis:
     image: redis/redis-stack:7.2.0-v11
+    networks:
+      - database
     volumes:
       - redis-data:/data
     ports:
@@ -121,6 +122,8 @@ services:
 
   clickhouse:
     image: clickhouse/clickhouse-server:24.8.4
+    networks:
+      - database
     ports:
       - "8123:8123"
       - "9000:9000"
@@ -134,6 +137,8 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:7.7.1
+    networks:
+      - database
     volumes:
       - kafka-data:/var/lib/kafka/data
     env_file:
@@ -141,6 +146,8 @@ services:
 
   kafka-ui:
     image: provectuslabs/kafka-ui:v0.7.2
+    networks:
+      - database
     depends_on:
       - kafka
     ports:
@@ -150,6 +157,8 @@ services:
 
   nginx:
     image: nginx:1.25.2
+    networks:
+      - ingress
     volumes:
       - ./config/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./config/nginx/proxy_params:/etc/nginx/proxy_params:ro
@@ -165,6 +174,8 @@ services:
 
   imgproxy:
     image: darthsim/imgproxy:v3.18.2
+    networks:
+      - ingress
     environment:
       - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/data
     volumes:
@@ -179,7 +190,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/lib/docker/containers:/var/lib/docker/containers
     env_file:
-      - config/promtail/promtail.env
+      - config/promtail/config.env
     command:
       [
         "-config.file=/etc/promtail/config.yml",
@@ -240,7 +251,7 @@ services:
     image: oliver006/redis_exporter:v1.54.0
     networks:
       - monitoring
-      - default
+      - database
     environment:
       - REDIS_ADDR=redis:6379
     deploy:
@@ -252,7 +263,7 @@ services:
     image: danielqsj/kafka-exporter:v1.8.0
     command: ["--kafka.server=kafka:9092"]
     networks:
-      - default
+      - database
       - monitoring
     deploy:
       labels:
@@ -267,7 +278,7 @@ services:
       - "--discovering-mode"
       - "--collect-all"
     networks:
-      - default
+      - database
       - monitoring
     deploy:
       labels:
