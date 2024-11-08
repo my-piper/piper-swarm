@@ -11,6 +11,7 @@ volumes:
   mongo-data:
   redis-data:
   kafka-data:
+  chrome-share:
   clickhouse-data:
   clickhouse-logs:
   storage-data:
@@ -51,7 +52,9 @@ services:
     <<: *piper
     networks:
       - monitoring
-      - database   
+      - database
+    volumes:
+      - chrome-share:/tmp/share
     working_dir: /app/backend
     command: ["npm", "run", "worker"]
     healthcheck:
@@ -73,11 +76,41 @@ services:
         delay: 5s
         order: start-first
 
+  chrome:
+    <<: *piper
+    networks:
+      - monitoring
+      - database   
+    volumes:
+      - chrome-share:/tmp/share
+    working_dir: /app/backend
+    command: ["npm", "run", "chrome"]
+    healthcheck:
+      test: curl --fail http://localhost:9222/json/version || exit 1
+      interval: 60s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
+    deploy:
+      labels:
+        - "prometheus-port=5555"
+        - "prometheus-job=piper-chrome"
+      resources:
+        limits:
+          memory: 4G
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 5s
+        order: start-first
+
   periodic:
     <<: *piper
     networks:
       - monitoring
       - database
+    volumes:
+      - chrome-share:/tmp/share
     working_dir: /app/backend
     command: ["npm", "run", "periodic"]
     deploy:
