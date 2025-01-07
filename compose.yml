@@ -21,6 +21,8 @@ volumes:
   vmagent-data:
 
 networks:
+  services:
+    driver: overlay
   monitoring:
     driver: overlay
   backend:
@@ -55,6 +57,7 @@ services:
     networks:
       - monitoring
       - database
+      - services
     volumes:
       - chrome-share:/tmp/share
     working_dir: /app/backend
@@ -82,7 +85,8 @@ services:
     <<: *piper
     networks:
       - monitoring
-      - database   
+      - database
+      - services
     volumes:
       - chrome-share:/tmp/share
     working_dir: /app/backend
@@ -221,6 +225,8 @@ services:
     volumes:
       - gpt4free-cookies:/app/har_and_cookies
       - gpt4free-images:/app/generated_images
+    networks:
+      - services
 
   # -- monitoring --
 
