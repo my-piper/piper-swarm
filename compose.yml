@@ -116,7 +116,7 @@ services:
     working_dir: /app/backend
     command: ["npm", "run", "periodic"]
     deploy:
-      replicas: 0
+      replicas: 1
       update_config:
         parallelism: 1
         delay: 5s
