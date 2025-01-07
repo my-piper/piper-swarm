@@ -15,6 +15,8 @@ volumes:
   clickhouse-data:
   clickhouse-logs:
   storage-data:
+  gpt4free-cookies:
+  gpt4free-images:
   prometheus-data:
   vmagent-data:
 
@@ -217,8 +219,8 @@ services:
   gpt4free:
     image: hlohaus789/g4f
     volumes:
-      - ./tmp/har_and_cookies:/app/har_and_cookies
-      - ./tmp/generated_images:/app/generated_images
+      - gpt4free-cookies:/app/har_and_cookies
+      - gpt4free-images:/app/generated_images
 
   # -- monitoring --
 
