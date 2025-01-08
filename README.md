@@ -9,8 +9,9 @@ sudo apt update
 sudo apt install docker-ce
 sudo docker run hello-world
 docker swarm init
+```
 
-## Load configs
+# Load configs
 
 ```bash
 mkdir /opt/piper
