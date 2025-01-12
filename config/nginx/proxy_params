@@ -1,4 +1,0 @@
-proxy_set_header CF-Connecting-IP $http_CF_Connecting_IP;
-proxy_set_header Host $http_host;
-proxy_set_header X-Real-IP $remote_addr;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

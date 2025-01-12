@@ -1,0 +1,113 @@
+x-seaweedfs: &seaweedfs
+  image: chrislusf/seaweedfs:3.81
+
+x-seaweedfs-volume: &seaweedfs-volume
+  <<: *seaweedfs
+  networks:
+    - seaweedfs
+    - monitoring
+  command:
+    - "volume"
+    - "-dir=/data"
+    - "-ip.bind=0.0.0.0"
+    - "-mserver=seaweedfs-master:9333"
+    - "-max=350"
+    - "-metricsPort=9327"
+  deploy:
+    labels:
+      - "prometheus-job=seaweedfs-volume"
+      - "prometheus-port=9327"
+
+networks:
+  s3storage:
+    driver: overlay
+  seaweedfs:
+    driver: overlay
+
+volumes:
+  seaweedfs-master-data:
+  seaweedfs-redis-data:
+
+services:
+  seaweedfs-master:
+    <<: *seaweedfs
+    networks:
+      - seaweedfs
+      - monitoring
+    command:
+      - "master"
+      - "-ip=seaweedfs-master"
+      - "-ip.bind=0.0.0.0"
+      - "-metricsPort=9327"
+      - "-mdir=/data"
+      - "-volumeSizeLimitMB=64"
+      - "-defaultReplication=000"
+    volumes:
+      - seaweedfs-master-data:/data
+    deploy:
+      labels:
+        - "prometheus-job=seaweedfs-master"
+        - "prometheus-port=9327"
+
+  seaweedfs-volume-1:
+    <<: *seaweedfs-volume
+    environment:
+      IP: seaweedfs-volume-1
+    volumes:
+      - /opt/piper/data/seaweedfs/volume-1:/data
+
+  seaweedfs-volume-2:
+    <<: *seaweedfs-volume
+    environment:
+      IP: seaweedfs-volume-2
+    volumes:
+      - /opt/piper/data/seaweedfs/volume-2:/data
+
+  seaweedfs-volume-3:
+    <<: *seaweedfs-volume
+    environment:
+      IP: seaweedfs-volume-3
+    volumes:
+      - /opt/piper/data/seaweedfs/volume-3:/data
+
+  seaweedfs-filer:
+    <<: *seaweedfs
+    networks:
+      - seaweedfs
+      - monitoring
+      - ingress
+    ports:
+      - "8333:8333"
+    command:
+      - "filer"
+      - "-s3"
+      - "-ip=seaweedfs-filer"
+      - "-ip.bind=0.0.0.0"
+      - "-master=seaweedfs-master:9333"
+      - "-metricsPort=9327"
+    volumes:
+      - ./config/seaweedfs/filer.toml:/etc/seaweedfs/filer.toml:ro
+    deploy:
+      replicas: 1
+      labels:
+        - "prometheus-job=seaweedfs-filer"
+        - "prometheus-port=9327"
+        - "traefik.enable=true"
+        - "traefik.http.routers.seaweedfs-s3.entrypoints=http"
+        - "traefik.http.routers.seaweedfs-s3.rule=Host(`${DOMAIN}`) && PathPrefix(`/storage/`)"
+        - "traefik.http.middlewares.seaweedfs-s3-strip.stripprefix.prefixes=/storage"
+        - "traefik.http.routers.seaweedfs-s3.middlewares=seaweedfs-s3-strip"
+        - "traefik.http.services.seaweedfs-s3.loadbalancer.server.port=8333"
+        - "traefik.docker.network=piper_ingress"
+
+  seaweedfs-redis:
+    image: redis:7.4.0
+    deploy:
+      placement:
+        constraints:
+          -  "node.role==manager"
+    volumes:
+      - seaweedfs-redis-data:/data
+    networks:
+      - seaweedfs
+      - monitoring

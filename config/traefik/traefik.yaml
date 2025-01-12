@@ -1,0 +1,32 @@
+entryPoints:
+  http:
+    address: ":80"
+  # https:
+  #   address: ":443"
+
+providers:
+  swarm:
+    exposedByDefault: false
+    endpoint: "unix:///var/run/docker.sock"
+
+certificatesResolvers:
+  certresolver:
+    acme:
+      email: admin@generativecore.ai
+      storage: /letsencrypt/acme.json
+      httpChallenge:
+        entryPoint: http
+          
+#accessLog: {}
+
+# log:
+#       level: DEBUG
+
+api:
+  dashboard: true
+  insecure: true
+
+metrics:
+  prometheus:
+    addServicesLabels: true
+    addRoutersLabels: true

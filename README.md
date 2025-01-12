@@ -1,18 +1,23 @@
-# Install Docker
+# DevOps 
 
-```bash
-sudo apt update
-sudo apt install apt-transport-https ca-certificates curl software-properties-common
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-sudo apt update
-sudo apt install docker-ce
-sudo docker run hello-world
-docker swarm init
+## Setup
+
+### SeaweedFS
+
+from `weed shell` execute:
+```shell
+fs.configure -locationPrefix=/buckets/artefacts/ -ttl=1d -volumeGrowthCount=1 -replication=000 -apply
+fs.configure -locationPrefix=/buckets/launches/ -ttl=14d -volumeGrowthCount=1 -replication=000 -apply
+fs.configure -locationPrefix=/buckets/assets/ -volumeGrowthCount=1 -replication=000 -apply
+
+s3.configure -user=anonymous -actions=Read:artefacts,Read:launches,Read:assets -apply
+s3.configure -access_key=<> -secret_key=<> -user=piper -actions=Read,Write -apply
+```
+
 
 ## Load configs
 
-```bash
+```shell
 mkdir /opt/piper
 mkdir /opt/piper/devops
 cd /opt/piper

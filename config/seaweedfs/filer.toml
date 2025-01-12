@@ -1,0 +1,8 @@
+[redis2]
+enabled = true
+address = "seaweedfs-redis:6379"
+superLargeDirectories = [
+    "/buckets/artefacts",
+    "/buckets/launches",
+    "/buckets/assets",
+]

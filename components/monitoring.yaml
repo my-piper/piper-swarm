@@ -1,0 +1,73 @@
+---
+
+volumes:
+  vmagent-data:
+
+networks:
+  monitoring:
+    driver: overlay
+
+services:
+  promtail:
+    image: grafana/promtail:2.9.0
+    volumes:
+      - ./config/promtail/config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers
+    env_file:
+      - config/promtail/config.env
+    command:
+      [
+        "-config.file=/etc/promtail/config.yml",
+        "-config.expand-env=true"
+      ]
+    deploy:
+      mode: global
+
+  vmagent:
+    image: victoriametrics/vmagent:v1.104.0
+    env_file:
+      - ./config/metrics/config.env
+    networks:
+      - monitoring
+    volumes:
+      - ./config/metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - vmagent-data:/vmagentdata
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      - "--promscrape.config=/etc/prometheus/prometheus.yml"
+      - "-envflag.enable"
+      - "-envflag.prefix=VM_"
+      
+  exporter-node:
+    image: quay.io/prometheus/node-exporter:v1.6.1
+    networks:
+      - monitoring
+    volumes:
+     - /:/host:ro,rslave
+    command:
+      - "--path.rootfs=/host"
+      - "--collector.filesystem.mount-points-exclude=^/(etc|boot|run|dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($$|/)"
+    deploy:
+      mode: global
+      labels:
+        - "prometheus-job=node"
+        - "prometheus-port=9100"
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    networks:
+      - monitoring
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    command:
+      - '-docker_only'
+    deploy:
+      mode: global
+      labels:
+        - "prometheus-port=8080"
+        - "prometheus-job=cadvisor"
