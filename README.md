@@ -15,7 +15,7 @@ s3.configure -access_key=<> -secret_key=<> -user=piper -actions=Read,Write -appl
 ```
 
 
-## Load configs
+# Load configs
 
 ```shell
 mkdir /opt/piper
