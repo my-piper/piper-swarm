@@ -35,3 +35,10 @@ services:
       - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/data
     volumes:
       - storage-data:/data/storage:ro
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.imgproxy.entrypoints=http"
+        - "traefik.http.routers.imgproxy.rule=Host(`${DOMAIN}`) && PathPrefix(`/xyz/`)"
+        - "traefik.http.services.imgproxy.loadbalancer.server.port=8080"
+        - "traefik.docker.network=piper_ingress"
