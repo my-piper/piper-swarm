@@ -3,7 +3,7 @@
 x-piper: &piper
   image: registry.gitlab.com/generative-core/piper/fullstack:${PIPER_IMAGE_TAG}
   env_file:
-    - ./config/piper.env
+    - ../config/piper.env
   volumes:
     - storage-data:/app/storage
 
@@ -13,6 +13,8 @@ volumes:
 
 networks:
   backend:
+    driver: overlay
+  database:
     driver: overlay
 
 services:

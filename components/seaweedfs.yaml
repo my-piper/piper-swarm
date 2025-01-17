@@ -1,3 +1,5 @@
+---
+
 x-seaweedfs: &seaweedfs
   image: chrislusf/seaweedfs:3.81
 
@@ -86,7 +88,7 @@ services:
       - "-master=seaweedfs-master:9333"
       - "-metricsPort=9327"
     volumes:
-      - ./config/seaweedfs/filer.toml:/etc/seaweedfs/filer.toml:ro
+      - ../config/seaweedfs/filer.toml:/etc/seaweedfs/filer.toml:ro
     deploy:
       replicas: 1
       labels:

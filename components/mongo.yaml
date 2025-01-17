@@ -1,0 +1,29 @@
+---
+
+volumes:
+  mongo-data:
+
+services:
+  mongo:
+    image: mongo:7.0.11
+    networks:
+      - database
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+
+  exporter-mongo:
+    image: percona/mongodb_exporter:0.41.2
+    command:
+      - "--mongodb.uri=mongodb://mongo:27017"
+      - "--compatible-mode"
+      - "--discovering-mode"
+      - "--collect-all"
+    networks:
+      - database
+      - monitoring
+    deploy:
+      labels:
+        - "prometheus-job=mongo"
+        - "prometheus-port=9216"

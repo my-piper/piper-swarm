@@ -1,0 +1,36 @@
+---
+
+volumes:
+  kafka-data:
+
+services:
+  kafka:
+    image: confluentinc/cp-kafka:7.7.1
+    networks:
+      - database
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    env_file:
+      - ../config/kafka/kafka.env.config
+
+  exporter-kafka:
+    image: danielqsj/kafka-exporter:v1.8.0
+    command: ["--kafka.server=kafka:9092"]
+    networks:
+      - database
+      - monitoring
+    deploy:
+      labels:
+        - "prometheus-job=kafka"
+        - "prometheus-port=9308"
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    networks:
+      - database
+    depends_on:
+      - kafka
+    ports:
+      - "4444:8080"
+    env_file:
+      - ../config/kafka/ui.env.config

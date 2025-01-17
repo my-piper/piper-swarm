@@ -1,44 +1,44 @@
----
+# ---
 
-networks:
-  ingress:
-    driver: overlay
+# networks:
+#   ingress:
+#     driver: overlay
 
-volumes:
-  traefik-letsencrypt-data:
+# volumes:
+#   traefik-letsencrypt-data:
 
-services:
-  traefik:
-    image: traefik:v3.3.1
-    networks:
-      - ingress
-      - monitoring
-    ports:
-      - "80:80"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./config/traefik:/etc/traefik:ro
-      - traefik-letsencrypt-data:/letsencrypt
-    deploy:
-      labels:
-        - "prometheus-port=8080"
-        - "prometheus-job=traefik"
-      placement:
-        constraints:
-          - "node.role==manager"
+# services:
+#   traefik:
+#     image: traefik:v3.3.1
+#     networks:
+#       - ingress
+#       - monitoring
+#     ports:
+#       - "80:80"
+#     volumes:
+#       - /var/run/docker.sock:/var/run/docker.sock
+#       - ./config/traefik:/etc/traefik:ro
+#       - traefik-letsencrypt-data:/letsencrypt
+#     deploy:
+#       labels:
+#         - "prometheus-port=8080"
+#         - "prometheus-job=traefik"
+#       placement:
+#         constraints:
+#           - "node.role==manager"
 
-  imgproxy:
-    image: darthsim/imgproxy:v3.18.2
-    networks:
-      - ingress
-    environment:
-      - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/data
-    volumes:
-      - storage-data:/data/storage:ro
-    deploy:
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.imgproxy.entrypoints=http"
-        - "traefik.http.routers.imgproxy.rule=Host(`${DOMAIN}`) && PathPrefix(`/xyz/`)"
-        - "traefik.http.services.imgproxy.loadbalancer.server.port=8080"
-        - "traefik.docker.network=piper_ingress"
+#   imgproxy:
+#     image: darthsim/imgproxy:v3.18.2
+#     networks:
+#       - ingress
+#     environment:
+#       - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/data
+#     volumes:
+#       - storage-data:/data/storage:ro
+#     deploy:
+#       labels:
+#         - "traefik.enable=true"
+#         - "traefik.http.routers.imgproxy.entrypoints=http"
+#         - "traefik.http.routers.imgproxy.rule=Host(`${DOMAIN}`) && PathPrefix(`/xyz/`)"
+#         - "traefik.http.services.imgproxy.loadbalancer.server.port=8080"
+#         - "traefik.docker.network=piper_ingress"

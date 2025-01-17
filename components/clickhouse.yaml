@@ -1,0 +1,21 @@
+---
+
+volumes:
+  clickhouse-data:
+  clickhouse-logs:
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8.4
+    networks:
+      - database
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - clickhouse-logs:/val/log/clickhouse-server
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144

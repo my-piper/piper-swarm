@@ -11,11 +11,11 @@ services:
   promtail:
     image: grafana/promtail:2.9.0
     volumes:
-      - ./config/promtail/config.yml:/etc/promtail/config.yml:ro
+      - ../config/promtail/config.yml:/etc/promtail/config.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/lib/docker/containers:/var/lib/docker/containers
     env_file:
-      - config/promtail/config.env
+      - ../config/promtail/config.env
     command:
       [
         "-config.file=/etc/promtail/config.yml",
@@ -27,11 +27,11 @@ services:
   vmagent:
     image: victoriametrics/vmagent:v1.104.0
     env_file:
-      - ./config/metrics/config.env
+      - ../config/metrics/config.env
     networks:
       - monitoring
     volumes:
-      - ./config/metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../config/metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - vmagent-data:/vmagentdata
       - /var/run/docker.sock:/var/run/docker.sock
     command:
