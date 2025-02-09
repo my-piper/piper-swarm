@@ -10,9 +10,13 @@ volumes:
 
 services:
   gpt4free:
-    image: hlohaus789/g4f
+    image: hlohaus789/g4f:latest-slim
     volumes:
       - gpt4free-cookies:/app/har_and_cookies
       - gpt4free-images:/app/generated_images
     networks:
       - services
+    entrypoint: >
+      sh -c "rm -rf /app/g4f/ &&
+             pip install -U 'g4f[slim]' &&
+             python -m g4f --debug"
