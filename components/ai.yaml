@@ -10,7 +10,7 @@ volumes:
 
 services:
   gpt4free:
-    image: hlohaus789/g4f:4.0.8
+    image: hlohaus789/g4f
     volumes:
       - gpt4free-cookies:/app/har_and_cookies
       - gpt4free-images:/app/generated_images
