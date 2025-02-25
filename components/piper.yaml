@@ -10,6 +10,7 @@ x-piper: &piper
 volumes:
   chrome-share:
   storage-data:
+  packages:
 
 networks:
   backend:
@@ -51,6 +52,7 @@ services:
       - services
     volumes:
       - chrome-share:/tmp/share
+      - packages:/app/packages
     working_dir: /app/backend
     command: ["npm", "run", "worker"]
     deploy:
