@@ -12,7 +12,7 @@ providers:
 certificatesResolvers:
   certresolver:
     acme:
-      email: admin@generativecore.ai
+      email: admin@piper.my
       storage: /letsencrypt/acme.json
       httpChallenge:
         entryPoint: http

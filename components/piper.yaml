@@ -10,6 +10,7 @@ x-piper: &piper
 volumes:
   chrome-share:
   storage-data:
+  packages:
 
 networks:
   backend:
@@ -22,7 +23,7 @@ services:
     <<: *piper
     networks:
       - monitoring
-      - database   
+      - database
       - ingress
     healthcheck:
       test: curl --fail http://localhost/health || exit 1
@@ -51,14 +52,9 @@ services:
       - services
     volumes:
       - chrome-share:/tmp/share
+      - packages:/app/packages
     working_dir: /app/backend
     command: ["npm", "run", "worker"]
-    healthcheck:
-      test: curl --fail http://localhost:5555/metrics || exit 1
-      interval: 60s
-      retries: 5
-      start_period: 10s
-      timeout: 10s
     deploy:
       labels:
         - "prometheus-port=5555"
