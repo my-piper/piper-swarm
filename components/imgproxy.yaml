@@ -10,6 +10,9 @@ services:
     volumes:
       - storage-data:/data/storage:ro
     deploy:
+      placement:
+        constraints:
+          -  "node.role==manager"
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.imgproxy.entrypoints=http"

@@ -12,6 +12,10 @@ services:
       - redis-data:/data
     ports:
       - "6379:6379"
+    deploy:
+      placement:
+        constraints:
+          -  "node.role==manager"
 
   exporter-redis:
     image: oliver006/redis_exporter:v1.54.0

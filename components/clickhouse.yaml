@@ -19,3 +19,7 @@ services:
       nofile:
         soft: 262144
         hard: 262144
+    deploy:
+      placement:
+        constraints:
+          -  "node.role==manager"

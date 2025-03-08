@@ -1,5 +1,8 @@
 ---
 
+networks:
+  database:
+
 volumes:
   kafka-data:
 
@@ -12,6 +15,10 @@ services:
       - kafka-data:/var/lib/kafka/data
     env_file:
       - ../config/kafka/kafka.env.config
+    deploy:
+      placement:
+        constraints:
+          -  "node.role==manager"
 
   exporter-kafka:
     image: danielqsj/kafka-exporter:v1.8.0

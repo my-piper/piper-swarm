@@ -16,11 +16,6 @@ certificatesResolvers:
       storage: /letsencrypt/acme.json
       httpChallenge:
         entryPoint: http
-          
-#accessLog: {}
-
-# log:
-#       level: DEBUG
 
 api:
   dashboard: true

@@ -38,6 +38,10 @@ services:
       - "--promscrape.config=/etc/prometheus/prometheus.yml"
       - "-envflag.enable"
       - "-envflag.prefix=VM_"
+    deploy:
+      placement:
+        constraints:
+          -  "node.role==manager"
       
   exporter-node:
     image: quay.io/prometheus/node-exporter:v1.6.1

@@ -32,17 +32,23 @@ services:
       start_period: 10s
       timeout: 10s
     deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 5s
+        order: start-first
+      placement:
+        constraints:
+          -  "node.role==manager"
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.backend.entrypoints=http"
         - "traefik.http.routers.backend.rule=Host(`${DOMAIN}`)"
         - "traefik.http.services.backend.loadbalancer.server.port=80"
         - "traefik.docker.network=piper_ingress"
-      replicas: 1
-      update_config:
-        parallelism: 1
-        delay: 5s
-        order: start-first
+      resources:
+        reservations:
+          memory: 250m
 
   worker:
     <<: *piper
@@ -56,12 +62,17 @@ services:
     working_dir: /app/backend
     command: ["npm", "run", "worker"]
     deploy:
+      placement:
+        constraints:
+          -  "node.role==manager"
       labels:
         - "prometheus-port=5555"
         - "prometheus-job=piper-worker"
       resources:
         limits:
           memory: 4g
+        reservations:
+          memory: 250m
       replicas: 8
       update_config:
         parallelism: 1
@@ -85,12 +96,17 @@ services:
       start_period: 10s
       timeout: 10s
     deploy:
+      placement:
+        constraints:
+          -  "node.role==manager"
       labels:
         - "prometheus-port=5555"
         - "prometheus-job=piper-chrome"
       resources:
         limits:
-          memory: 4G
+          memory: 4g
+        reservations:
+          memory: 250m
       replicas: 2
       update_config:
         parallelism: 1
@@ -107,11 +123,19 @@ services:
     working_dir: /app/backend
     command: ["npm", "run", "periodic"]
     deploy:
+      placement:
+        constraints:
+          -  "node.role==manager"
       replicas: 1
       update_config:
         parallelism: 1
         delay: 5s
         order: start-first
+      resources:
+        limits:
+          memory: 4g
+        reservations:
+          memory: 250m
 
   sockets:
     <<: *piper
@@ -122,6 +146,9 @@ services:
     working_dir: /app/backend
     command: ["npm", "run", "sockets"]
     deploy:
+      placement:
+        constraints:
+          -  "node.role==manager"
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.sockets.entrypoints=http"
@@ -133,3 +160,8 @@ services:
         parallelism: 1
         delay: 5s
         order: start-first
+      resources:
+        limits:
+          memory: 4g
+        reservations:
+          memory: 250m

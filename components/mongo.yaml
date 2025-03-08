@@ -12,6 +12,10 @@ services:
       - mongo-data:/data/db
     ports:
       - "27017:27017"
+    deploy:
+      placement:
+        constraints:
+          -  "node.role==manager"
 
   exporter-mongo:
     image: percona/mongodb_exporter:0.41.2
