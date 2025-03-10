@@ -1,11 +1,9 @@
 ---
 
 x-piper: &piper
-  image: registry.gitlab.com/generative-core/piper/fullstack:${PIPER_IMAGE_TAG}
+  image: ghcr.io/my-piper/piper:${PIPER_IMAGE_TAG}
   env_file:
     - ../config/piper.env
-  volumes:
-    - storage-data:/app/storage
 
 volumes:
   chrome-share:
