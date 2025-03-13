@@ -29,6 +29,7 @@ services:
       retries: 5
       start_period: 10s
       timeout: 10s
+    command: ["npm", "run", "server"]
     deploy:
       replicas: 1
       update_config:
@@ -57,7 +58,6 @@ services:
     volumes:
       - chrome-share:/tmp/share
       - packages:/app/packages
-    working_dir: /app/backend
     command: ["npm", "run", "worker"]
     deploy:
       placement:
@@ -85,7 +85,6 @@ services:
       - services
     volumes:
       - chrome-share:/tmp/share
-    working_dir: /app/backend
     command: ["npm", "run", "chrome"]
     healthcheck:
       test: curl --fail http://localhost:9222/json/version || exit 1
@@ -118,7 +117,6 @@ services:
       - database
     volumes:
       - chrome-share:/tmp/share
-    working_dir: /app/backend
     command: ["npm", "run", "periodic"]
     deploy:
       placement:
@@ -141,7 +139,6 @@ services:
       - monitoring
       - database
       - ingress
-    working_dir: /app/backend
     command: ["npm", "run", "sockets"]
     deploy:
       placement:
