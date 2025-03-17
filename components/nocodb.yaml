@@ -1,0 +1,38 @@
+---
+
+volumes:
+  postgres-data:
+  nocodb-data:
+
+services:
+  postgres:
+    image: postgres:16
+    env_file:
+      - ../config/postgres.env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  nocodb:
+    image: nocodb/nocodb:latest
+    env_file:
+      - ../config/nocodb.env
+    volumes:
+      - nocodb-data:/usr/app/data
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.oauth.entrypoints=http"
+        - "traefik.http.routers.oauth.rule=Host(`${DOMAIN}`) && PathPrefix(`/nocodb/`)"
+        - "traefik.http.routers.oauth.middlewares=piper-oauth-strip"
+        - "traefik.http.middlewares.piper-oauth-strip.stripprefix.prefixes=/nocodb"
+        - "traefik.http.services.oauth.loadbalancer.server.port=80"
+        - "traefik.docker.network=piper_ingress"
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 5s
+        order: start-first
