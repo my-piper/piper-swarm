@@ -189,3 +189,23 @@ services:
           memory: 1g
         reservations:
           memory: 250m
+
+  metrics:
+    <<: *piper
+    networks:
+      - monitoring
+    command: ["metrics"]
+    deploy:
+      placement:
+        constraints:
+          -  "node.role==manager"
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 5s
+        order: start-first
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 250m
