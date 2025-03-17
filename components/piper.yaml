@@ -160,3 +160,32 @@ services:
           memory: 4g
         reservations:
           memory: 250m
+
+  oauth:
+    <<: *piper
+    networks:
+      - database
+      - ingress
+    command: ["oauth"]
+    deploy:
+      placement:
+        constraints:
+          -  "node.role==manager"
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.sockets.entrypoints=http"
+        - "traefik.http.routers.sockets.rule=Host(`${DOMAIN}`) && PathPrefix(`/oauth/`)"
+        - "traefik.http.routers.sockets.middlewares=sockets-strip-oauth"
+        - "traefik.http.middlewares.sockets-strip-oauth.stripprefix.prefixes=/oauth"
+        - "traefik.http.services.sockets.loadbalancer.server.port=80"
+        - "traefik.docker.network=piper_ingress"
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 5s
+        order: start-first
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 250m
