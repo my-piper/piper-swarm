@@ -25,3 +25,6 @@ metrics:
   prometheus:
     addServicesLabels: true
     addRoutersLabels: true
+
+      #log:
+      #level: DEBUG

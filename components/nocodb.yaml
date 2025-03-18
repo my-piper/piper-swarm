@@ -7,6 +7,8 @@ volumes:
 services:
   postgres:
     image: postgres:16
+    networks:
+      - database
     env_file:
       - ../config/postgres.env
     volumes:
@@ -20,6 +22,9 @@ services:
 
   nocodb:
     image: nocodb/nocodb:latest
+    networks:
+      - database
+      - ingress
     env_file:
       - ../config/nocodb.env
     volumes:
@@ -34,7 +39,7 @@ services:
         - "traefik.http.routers.nocodb.rule=Host(`${DOMAIN}`) && PathPrefix(`/nocodb/`)"
         - "traefik.http.routers.nocodb.middlewares=piper-nocodb-strip"
         - "traefik.http.middlewares.piper-nocodb-strip.stripprefix.prefixes=/nocodb"
-        - "traefik.http.services.nocodb.loadbalancer.server.port=80"
+        - "traefik.http.services.nocodb.loadbalancer.server.port=8080"
         - "traefik.docker.network=piper_ingress"
       update_config:
         parallelism: 1
