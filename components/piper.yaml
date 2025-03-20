@@ -33,7 +33,7 @@ services:
         order: start-first
       placement:
         constraints:
-          - "node.labels.app==piper-backend"
+          -  "node.role==manager"
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.backend.entrypoints=http"
@@ -54,7 +54,7 @@ services:
     deploy:
       placement:
         constraints:
-          -  "node.role==manager"
+          - "node.labels.app==piper-backend"
       labels:
         - "prometheus-port=5555"
         - "prometheus-job=piper-worker"

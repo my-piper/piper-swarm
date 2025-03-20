@@ -15,7 +15,7 @@ s3.configure -access_key=<> -secret_key=<> -user=piper -actions=Read,Write -appl
 ```
 
 
-# Load configs
+## Load configs
 
 ```shell
 mkdir /opt/piper
@@ -25,12 +25,15 @@ git config --global credential.helper store
 git clone https://gitlab.com/generative-core/piper/devops/platform.git ./devops
 ```
 
-# Run system
+## Run system
 
 ```bash
 make up
 make status
 ```
 
-# TODO...
+## Docker
 
+```shell
+docker node update --label-add app=piper-backend production-2
+```
