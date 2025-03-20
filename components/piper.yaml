@@ -5,11 +5,6 @@ x-piper: &piper
   env_file:
     - ../config/piper.env
 
-volumes:
-  chrome-share:
-  storage-data:
-  packages:
-
 networks:
   backend:
     driver: overlay
@@ -55,10 +50,7 @@ services:
       - monitoring
       - database
       - services
-    volumes:
-      - chrome-share:/tmp/share
-      - packages:/app/packages
-    command: ["worker"]
+    entrypoint: ["./worker.sh"]
     deploy:
       placement:
         constraints:
@@ -83,8 +75,6 @@ services:
       - monitoring
       - database
       - services
-    volumes:
-      - chrome-share:/tmp/share
     command: ["chrome"]
     healthcheck:
       test: curl --fail http://localhost:9222/json/version || exit 1
@@ -115,8 +105,6 @@ services:
     networks:
       - monitoring
       - database
-    volumes:
-      - chrome-share:/tmp/share
     command: ["periodic"]
     deploy:
       placement:
