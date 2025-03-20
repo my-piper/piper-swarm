@@ -183,7 +183,7 @@ services:
         constraints:
           -  "node.role==manager"
       labels:
-        - "prometheus-port=5555"
+        - "prometheus-port=80"
         - "prometheus-job=piper"
       replicas: 1
       update_config:
