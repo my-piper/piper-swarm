@@ -50,7 +50,7 @@ services:
       - monitoring
       - database
       - services
-    entrypoint: ["./worker.sh"]
+    command: ["worker"]
     deploy:
       placement:
         constraints:

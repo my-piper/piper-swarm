@@ -25,6 +25,7 @@ services:
     networks:
       - database
       - ingress
+      - seaweedfs
     env_file:
       - ../config/nocodb.env
     volumes:

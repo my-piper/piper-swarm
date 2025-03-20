@@ -5,10 +5,6 @@ services:
     image: darthsim/imgproxy:v3.18.2
     networks:
       - ingress
-    environment:
-      - IMGPROXY_LOCAL_FILESYSTEM_ROOT=/data
-    volumes:
-      - storage-data:/data/storage:ro
     deploy:
       placement:
         constraints:
