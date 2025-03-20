@@ -176,6 +176,7 @@ services:
     <<: *piper
     networks:
       - monitoring
+      - database
     command: ["metrics"]
     deploy:
       placement:
