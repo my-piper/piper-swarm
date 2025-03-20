@@ -55,9 +55,6 @@ services:
       placement:
         constraints:
           - "node.labels.app==piper-backend"
-      labels:
-        - "prometheus-port=5555"
-        - "prometheus-job=piper-worker"
       resources:
         limits:
           memory: 4g
@@ -86,9 +83,6 @@ services:
       placement:
         constraints:
           -  "node.role==manager"
-      labels:
-        - "prometheus-port=5555"
-        - "prometheus-job=piper-chrome"
       resources:
         limits:
           memory: 4g
@@ -187,6 +181,9 @@ services:
       placement:
         constraints:
           -  "node.role==manager"
+      labels:
+        - "prometheus-port=5555"
+        - "prometheus-job=piper"
       replicas: 1
       update_config:
         parallelism: 1
