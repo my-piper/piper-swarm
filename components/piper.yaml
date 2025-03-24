@@ -5,6 +5,27 @@ x-piper: &piper
   env_file:
     - ../config/piper.env
 
+x-worker: &worker
+    <<: *piper
+  networks:
+    - monitoring
+    - database
+    - services
+  deploy:
+    placement:
+      constraints:
+        - "node.labels.app==piper-backend"
+    resources:
+      limits:
+        memory: 4g
+      reservations:
+        memory: 250m
+    replicas: 8
+    update_config:
+      parallelism: 1
+      delay: 5s
+      order: start-first
+
 networks:
   backend:
     driver: overlay
@@ -44,27 +65,45 @@ services:
         reservations:
           memory: 250m
 
-  worker:
-    <<: *piper
-    networks:
-      - monitoring
-      - database
-      - services
-    command: ["worker"]
-    deploy:
-      placement:
-        constraints:
-          - "node.labels.app==piper-backend"
-      resources:
-        limits:
-          memory: 4g
-        reservations:
-          memory: 250m
-      replicas: 8
-      update_config:
-        parallelism: 1
-        delay: 5s
-        order: start-first
+  process_rapid_nodes:
+    <<: *worker
+    command: ["process_rapid_nodes"]
+
+  process_regular_nodes:
+    <<: *worker
+    command: ["process_regular_nodes"]
+
+  process_deferred_nodes:
+    <<: *worker
+    command: ["process_deferred_nodes"]
+
+  process_protracted_nodes:
+    <<: *worker
+    command: ["process_protracted_nodes"]
+
+  run_launches:
+    <<: *worker
+    command: ["run_launches"]
+
+  set_launches_outputs:
+    <<: *worker
+    command: ["set_launches_outputs"]
+
+  set_launches_errors:
+    <<: *worker
+    command: ["set_launches_errors"]
+
+  update_users_balance:
+    <<: *worker
+    command: ["update_users_balance"]
+
+  record_pipelines_usage:
+    <<: *worker
+    command: ["record_pipelines_usage"]
+
+  update_packages:
+    <<: *worker
+    command: ["update_packages"]
 
   chrome:
     <<: *piper
