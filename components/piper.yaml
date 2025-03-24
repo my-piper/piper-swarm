@@ -6,7 +6,7 @@ x-piper: &piper
     - ../config/piper.env
 
 x-worker: &worker
-    <<: *piper
+  <<: *piper
   networks:
     - monitoring
     - database
