@@ -5,6 +5,21 @@ x-piper: &piper
   env_file:
     - ../config/piper.env
 
+x-worker-deploy: &worker-deploy
+  placement:
+      constraints:
+        - "node.labels.piper-worker==true"
+  resources:
+    limits:
+      memory: 4g
+    reservations:
+      memory: 250m
+  replicas: 1
+  update_config:
+    parallelism: 1
+    delay: 5s
+    order: start-first
+
 x-worker: &worker
   <<: *piper
   networks:
@@ -12,19 +27,7 @@ x-worker: &worker
     - database
     - services
   deploy:
-    placement:
-      constraints:
-        - "node.labels.app==piper-backend"
-    resources:
-      limits:
-        memory: 4g
-      reservations:
-        memory: 250m
-    replicas: 8
-    update_config:
-      parallelism: 1
-      delay: 5s
-      order: start-first
+    <<: *worker-deploy
 
 networks:
   backend:
@@ -68,6 +71,9 @@ services:
   process_rapid_nodes:
     <<: *worker
     command: ["process_rapid_nodes"]
+    deploy:
+      <<: *worker-deploy
+      replicas: 3
 
   process_regular_nodes:
     <<: *worker
