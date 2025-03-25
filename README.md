@@ -35,5 +35,6 @@ make status
 ## Docker
 
 ```shell
-docker node update --label-add app=piper-backend production-2
+docker node update --label-add piper-worker==true production-2
+ docker node update --label-rm app production-2
 ```
