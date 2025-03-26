@@ -73,43 +73,70 @@ services:
     command: ["process_rapid_nodes"]
     deploy:
       <<: *worker-deploy
-      replicas: 3
+      replicas: ${PROCESS_RAPID_NODES_REPLICAS:-1}
 
   process_regular_nodes:
     <<: *worker
     command: ["process_regular_nodes"]
+    deploy:
+      <<: *worker-deploy
+      replicas: ${PROCESS_REGULAR_NODES_REPLICAS:-1}
 
   process_deferred_nodes:
     <<: *worker
     command: ["process_deferred_nodes"]
+    deploy:
+      <<: *worker-deploy
+      replicas: ${PROCESS_DEFERRED_NODES_REPLICAS:-1}
 
   process_protracted_nodes:
     <<: *worker
     command: ["process_protracted_nodes"]
+    deploy:
+      <<: *worker-deploy
+      replicas: ${PROCESS_PROTRACTED_NODES_REPLICAS:-1}
 
   run_launches:
     <<: *worker
     command: ["run_launches"]
+    deploy:
+      <<: *worker-deploy
+      replicas: ${RUN_LAUNCHES_REPLICAS:-1}
 
   set_launches_outputs:
     <<: *worker
     command: ["set_launches_outputs"]
+    deploy:
+      <<: *worker-deploy
+      replicas: ${SET_LAUNCHES_OUTPUTS_REPLICAS:-1}
 
   set_launches_errors:
     <<: *worker
     command: ["set_launches_errors"]
+    deploy:
+      <<: *worker-deploy
+      replicas: ${SET_LAUNCHES_OUTPUTS_REPLICAS:-1}
 
   update_users_balance:
     <<: *worker
     command: ["update_users_balance"]
+    deploy:
+      <<: *worker-deploy
+      replicas: ${UPDATE_USERS_BALANCE_REPLICAS:-1}
 
   record_pipelines_usage:
     <<: *worker
     command: ["record_pipelines_usage"]
+    deploy:
+      <<: *worker-deploy
+      replicas: ${RECORD_PIPELINES_USAGE_REPLICAS:-1}
 
   update_packages:
     <<: *worker
     command: ["update_packages"]
+    deploy:
+      <<: *worker-deploy
+      replicas: ${UPDATE_PACKAGES_REPLICAS:-1}
 
   chrome:
     <<: *piper
