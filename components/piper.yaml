@@ -13,7 +13,7 @@ x-worker-deploy: &worker-deploy
     limits:
       memory: 4g
     reservations:
-      memory: 250m
+      memory: 200m
   replicas: 1
   update_config:
     parallelism: 1
