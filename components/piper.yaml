@@ -103,19 +103,12 @@ services:
       <<: *worker-deploy
       replicas: ${RUN_LAUNCHES_REPLICAS:-1}
 
-  set_launches_outputs:
+  set_launches_io:
     <<: *worker
-    command: ["set_launches_outputs"]
+    command: ["set_launches_io"]
     deploy:
       <<: *worker-deploy
-      replicas: ${SET_LAUNCHES_OUTPUTS_REPLICAS:-1}
-
-  set_launches_errors:
-    <<: *worker
-    command: ["set_launches_errors"]
-    deploy:
-      <<: *worker-deploy
-      replicas: ${SET_LAUNCHES_OUTPUTS_REPLICAS:-1}
+      replicas: ${SET_LAUNCHES_IO_REPLICAS:-1}
 
   update_users_balance:
     <<: *worker
