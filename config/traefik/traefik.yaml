@@ -26,5 +26,6 @@ metrics:
     addServicesLabels: true
     addRoutersLabels: true
 
-      #log:
-      #level: DEBUG
+# accessLog: {}
+# log:
+#   level: DEBUG
