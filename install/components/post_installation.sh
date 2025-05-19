@@ -39,21 +39,6 @@ setup_seaweedfs() {
             # Wait a bit for the job to start
             log_info "SeaweedFS configuration job is running..."
             sleep 20 
-            
-            # # Check if the job is running
-            # JOB_CONTAINER=$(docker ps --filter name=${STACK_NAME}_config_seaweedfs-config --format "{{.ID}}")
-            # if [ -n "$JOB_CONTAINER" ]; then
-            #     log_info "SeaweedFS configuration job is running. Check logs with: docker logs $JOB_CONTAINER"
-            # else
-            #     log_warning "SeaweedFS configuration job not found. It may have completed quickly or failed to start."
-            # fi
-            
-            # # Wait a bit more to allow the job to complete its work
-            # sleep 20
-            
-            # Remove the job stack after it's done or 30 seconds timeout
-            # log_info "Removing SeaweedFS configuration job..."
-            # docker stack rm ${STACK_NAME}_config
         else
             log_warning "S3 credentials not found in piper.env, skipping S3 user configuration"
         fi
