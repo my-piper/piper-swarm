@@ -13,11 +13,11 @@ configure_postgres_env() {
         cp "$config_dir/postgres.env.template" "$config_dir/postgres.env"
         
         # Generate a random Postgres password
-        pg_password=$(generate_random_hex 16)
+        pg_password=$(generate_random_password 16)
         
         # Update the postgres.env file
-        sed -i "s/POSTGRES_PASSWORD=xyzXYZ/POSTGRES_PASSWORD=$pg_password/" "$config_dir/postgres.env"
-        log_info "postgres.env configured."
+        sed -i "s/<auto generate>/$pg_password/" "$config_dir/postgres.env"
+        log_info "postgres.env configured with secure password."
     else
         log_info "postgres.env already exists."
     fi

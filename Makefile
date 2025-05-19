@@ -1,7 +1,7 @@
-include config/swarm.env
+-include config/swarm.env
 export
 
-SWARM_SOURCES=$(shell find ./components -name "*.yaml")
+SWARM_SOURCES=$(shell find ./components -maxdepth 1 -name "*.yaml")
 SWARM_FILES=$(patsubst %,-c %,$(SWARM_SOURCES))
 
 up:
@@ -9,3 +9,7 @@ up:
 
 status:
 	docker stack services ${SWARM_STACK_NAME}
+
+.PHONY: install
+install:
+	./install/install.sh

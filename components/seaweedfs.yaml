@@ -32,6 +32,9 @@ networks:
 volumes:
   seaweedfs-master-data:
   seaweedfs-redis-data:
+  seaweedfs-volume-1-data:
+  seaweedfs-volume-2-data:
+  seaweedfs-volume-3-data:
 
 services:
   seaweedfs-master:
@@ -62,21 +65,21 @@ services:
     environment:
       IP: seaweedfs-volume-1
     volumes:
-      - /opt/piper/data/seaweedfs/volume-1:/data
+      - ${SEAWEEDFS_VOLUME_1_DATA_DIR:-seaweedfs-volume-1-data}:/data
 
   seaweedfs-volume-2:
     <<: *seaweedfs-volume
     environment:
       IP: seaweedfs-volume-2
     volumes:
-      - /opt/piper/data/seaweedfs/volume-2:/data
+      - ${SEAWEEDFS_VOLUME_2_DATA_DIR:-seaweedfs-volume-2-data}:/data
 
   seaweedfs-volume-3:
     <<: *seaweedfs-volume
     environment:
       IP: seaweedfs-volume-3
     volumes:
-      - /opt/piper/data/seaweedfs/volume-3:/data
+      - ${SEAWEEDFS_VOLUME_3_DATA_DIR:-seaweedfs-volume-3-data}:/data
 
   seaweedfs-filer:
     <<: *seaweedfs

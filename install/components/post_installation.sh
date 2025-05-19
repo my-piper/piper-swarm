@@ -5,99 +5,66 @@
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$script_dir/utils.sh"
 
-create_postgres_user() {
-    local config_dir="$1"
-    
-    if [ -f "$config_dir/.pg_nocodb_credentials" ]; then
-        log_warning "Setting up dedicated PostgreSQL user for NocoDB..."
-        # Source the credentials
-        source "$config_dir/.pg_nocodb_credentials"
-        
-        # Wait a moment for PostgreSQL to initialize
-        log_warning "Waiting for PostgreSQL to initialize..."
-        sleep 10
-        
-        # Find the PostgreSQL container
-        PG_CONTAINER=$(docker ps --filter name=piper_postgres --format "{{.ID}}")
-        
-        if [ -n "$PG_CONTAINER" ]; then
-            log_info "Found PostgreSQL container: $PG_CONTAINER"
-            
-            # Try to create the user with retries
-            max_retries=5
-            retry_count=0
-            
-            while [ $retry_count -lt $max_retries ]; do
-                log_warning "Attempting to create PostgreSQL user (attempt $(($retry_count+1))/${max_retries})..."
-                
-                if docker exec -i $PG_CONTAINER psql -U postgres -d nocodb << EOF
-CREATE USER $PG_NOCODB_USER WITH PASSWORD '$PG_NOCODB_PASSWORD';
-GRANT ALL PRIVILEGES ON DATABASE nocodb TO $PG_NOCODB_USER;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $PG_NOCODB_USER;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $PG_NOCODB_USER;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO $PG_NOCODB_USER;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON SEQUENCES TO $PG_NOCODB_USER;
-EOF
-                then
-                    log_info "PostgreSQL user created successfully."
-                    
-                    # Update the NocoDB service to apply the new configuration
-                    log_warning "Updating NocoDB service to apply new database configuration..."
-                    docker service update --force piper_nocodb
-                    
-                    # Remove credentials file
-                    rm "$config_dir/.pg_nocodb_credentials"
-                    
-                    break
-                else
-                    retry_count=$((retry_count+1))
-                    if [ $retry_count -lt $max_retries ]; then
-                        log_warning "Failed to create user. Retrying in 10 seconds..."
-                        sleep 10
-                    else
-                        log_warning "Failed to create PostgreSQL user after ${max_retries} attempts."
-                        log_warning "You may need to manually create the user with these credentials:"
-                        log_info "Username: $PG_NOCODB_USER"
-                        log_info "Password: $PG_NOCODB_PASSWORD"
-                    fi
-                fi
-            done
-        else
-            log_warning "PostgreSQL container not found. You may need to manually create the database user."
-            log_info "Username: $PG_NOCODB_USER"
-            log_info "Password: $PG_NOCODB_PASSWORD"
-        fi
-    fi
-}
-
 setup_seaweedfs() {
     log_warning "Configuring SeaweedFS buckets and S3 access..."
-    # Find the SeaweedFS container
-    SEAWEED_CONTAINER=$(docker ps --filter name=piper_seaweedfs --format "{{.ID}}")
-    if [ -z "$SEAWEED_CONTAINER" ]; then
-        log_warning "SeaweedFS container not found. Skipping automatic configuration."
-        return
+    
+    # Get configuration directory path
+    CONFIG_DIR="$(dirname "$(dirname "$script_dir")")/config"
+    
+    # Extract S3 keys from piper.env if it exists
+    if [ -f "$CONFIG_DIR/piper.env" ]; then
+        # Extract S3 keys from piper.env
+        S3_ACCESS_KEY=$(grep "S3_ACCESS_KEY_ID" "$CONFIG_DIR/piper.env" | cut -d'=' -f2)
+        S3_SECRET_KEY=$(grep "S3_SECRET_ACCESS_KEY" "$CONFIG_DIR/piper.env" | cut -d'=' -f2)
+        
+        if [ -n "$S3_ACCESS_KEY" ] && [ -n "$S3_SECRET_KEY" ]; then
+            log_info "Found S3 credentials in piper.env, deploying configuration job..."
+            
+            # Deploy the configuration job with environment variables
+            export S3_ACCESS_KEY=$S3_ACCESS_KEY
+            export S3_SECRET_KEY=$S3_SECRET_KEY
+            
+            # Get stack name from swarm.env if available
+            STACK_NAME="piper"
+            if [ -f "$CONFIG_DIR/swarm.env" ]; then
+                TEMP_STACK_NAME=$(grep "^SWARM_STACK_NAME=" "$CONFIG_DIR/swarm.env" | cut -d'=' -f2)
+                if [ -n "$TEMP_STACK_NAME" ]; then
+                    STACK_NAME=$TEMP_STACK_NAME
+                fi
+            fi
+            
+            COMPONENTS_DIR="$(dirname "$(dirname "$script_dir")")/components"
+            docker stack deploy -c "$COMPONENTS_DIR/jobs/seaweedfs-config-job.yaml" ${STACK_NAME}
+            
+            # Wait a bit for the job to start
+            log_info "SeaweedFS configuration job is running..."
+            sleep 20 
+            
+            # # Check if the job is running
+            # JOB_CONTAINER=$(docker ps --filter name=${STACK_NAME}_config_seaweedfs-config --format "{{.ID}}")
+            # if [ -n "$JOB_CONTAINER" ]; then
+            #     log_info "SeaweedFS configuration job is running. Check logs with: docker logs $JOB_CONTAINER"
+            # else
+            #     log_warning "SeaweedFS configuration job not found. It may have completed quickly or failed to start."
+            # fi
+            
+            # # Wait a bit more to allow the job to complete its work
+            # sleep 20
+            
+            # Remove the job stack after it's done or 30 seconds timeout
+            # log_info "Removing SeaweedFS configuration job..."
+            # docker stack rm ${STACK_NAME}_config
+        else
+            log_warning "S3 credentials not found in piper.env, skipping S3 user configuration"
+        fi
+    else
+        log_warning "piper.env file not found at $CONFIG_DIR/piper.env, skipping S3 user configuration"
     fi
-    # Run configuration commands inside the container
-    docker exec -i $SEAWEED_CONTAINER weed shell << EOF
-fs.configure -locationPrefix=/buckets/artefacts/ -ttl=1d -volumeGrowthCount=1 -replication=000 -apply
-fs.configure -locationPrefix=/buckets/launches/ -ttl=14d -volumeGrowthCount=1 -replication=000 -apply
-fs.configure -locationPrefix=/buckets/assets/ -volumeGrowthCount=1 -replication=000 -apply
-s3.configure -user=anonymous -actions=Read:artefacts,Read:launches,Read:assets -apply
-EOF
-    # Optionally, you can set up a secure S3 user here if you have access/secret keys
-    # Example (replace with real values or generate securely):
-    # docker exec -i $SEAWEED_CONTAINER weed shell << EOF
-    # s3.configure -access_key=YOUR_ACCESS_KEY -secret_key=YOUR_SECRET_KEY -user=piper -actions=Read,Write -apply
-    # EOF
-    log_info "SeaweedFS buckets and S3 access configured."
+    
+    log_info "SeaweedFS buckets and S3 access configuration completed."
 }
 
 
 post_installation() {
-    local config_dir="$1"
-    # Create PostgreSQL user for NocoDB
-    create_postgres_user "$config_dir"
-    # Automatically configure SeaweedFS (now in components/installation)
     setup_seaweedfs
 }

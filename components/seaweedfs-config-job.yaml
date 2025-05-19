@@ -1,0 +1,37 @@
+---
+# SeaweedFS configuration job for setting up buckets and S3 access
+
+services:
+  seaweedfs-config:
+    image: chrislusf/seaweedfs:3.81
+    networks:
+      - seaweedfs
+    command: >
+      sh -c "
+        echo 'Waiting for SeaweedFS master and filer to be ready...' &&
+        sleep 10 &&
+        echo 'Configuring SeaweedFS buckets and permissions...' &&
+        weed shell << EOF
+      fs.configure -locationPrefix=/buckets/artefacts/ -ttl=1d -volumeGrowthCount=1 -replication=000 -apply
+      fs.configure -locationPrefix=/buckets/launches/ -ttl=14d -volumeGrowthCount=1 -replication=000 -apply
+      fs.configure -locationPrefix=/buckets/assets/ -volumeGrowthCount=1 -replication=000 -apply
+      s3.configure -user=anonymous -actions=Read:artefacts,Read:launches,Read:assets -apply
+      s3.configure -access_key=\${S3_ACCESS_KEY} -secret_key=\${S3_SECRET_KEY} -user=piper -actions=Read,Write:artefacts,Read,Write:launches,Read,Write:assets -apply
+      EOF
+      "
+    environment:
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY:-default_access_key}
+      - S3_SECRET_KEY=${S3_SECRET_KEY:-default_secret_key}
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      placement:
+        constraints:
+          - "node.role==manager"
+
+networks:
+  seaweedfs:
+    external: true
