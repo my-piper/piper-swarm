@@ -19,7 +19,6 @@ configure_piper_env() {
         s3_secret_key=$(generate_random_hex 16)
         
         # Update the piper.env file with generated secrets
-        sed -i "s/<auto generate>/$jwt_secret/g" "$config_dir/piper.env"
         sed -i "s/JWT_SECRET=<auto generate>/JWT_SECRET=$jwt_secret/" "$config_dir/piper.env"
         sed -i "s/REDIS_SECRET_KEY=<auto generate>/REDIS_SECRET_KEY=$redis_secret/" "$config_dir/piper.env"
         sed -i "s/S3_ACCESS_KEY_ID=<auto generate>/S3_ACCESS_KEY_ID=$s3_access_key/" "$config_dir/piper.env"
