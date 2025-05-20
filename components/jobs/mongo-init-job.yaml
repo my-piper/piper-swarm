@@ -1,0 +1,19 @@
+---
+networks:
+  database:
+    driver: overlay
+
+services:
+  mongo-init:
+    image: ghcr.io/my-piper/piper:${PIPER_IMAGE_TAG}
+    env_file:
+      - ../../config/piper.env
+    networks:
+      - database
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["npm run cli -- mongo create"]
+    deploy:
+      mode: replicated-job
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3

@@ -49,7 +49,74 @@ setup_seaweedfs() {
     log_info "SeaweedFS buckets and S3 access configuration completed."
 }
 
+setup_mongodb() {
+    log_warning "Initializing MongoDB collections for Piper..."
+    
+    # Get stack name from swarm.env if available
+    CONFIG_DIR="$(dirname "$(dirname "$script_dir")")/config"
+    STACK_NAME="piper"
+    if [ -f "$CONFIG_DIR/swarm.env" ]; then
+        TEMP_STACK_NAME=$(grep "^SWARM_STACK_NAME=" "$CONFIG_DIR/swarm.env" | cut -d'=' -f2)
+        if [ -n "$TEMP_STACK_NAME" ]; then
+            STACK_NAME=$TEMP_STACK_NAME
+        fi
+    fi
+    
+    COMPONENTS_DIR="$(dirname "$(dirname "$script_dir")")/components"
+    log_info "Deploying MongoDB initialization job..."
+    docker stack deploy -c "$COMPONENTS_DIR/jobs/mongo-init-job.yaml" ${STACK_NAME}
+    
+    # Wait a bit for the job to start
+    log_info "MongoDB initialization job is running..."
+    sleep 20
+    
+    log_info "MongoDB initialization completed."
+}
+
+create_admin() {
+    log_warning "Creating admin user for Piper..."
+    
+    # Get configuration directory path
+    CONFIG_DIR="$(dirname "$(dirname "$script_dir")")/config"
+    
+    # Check if piper.env exists and contains admin credentials
+    if [ -f "$CONFIG_DIR/piper.env" ]; then
+        ADMIN_EMAIL=$(grep "ADMIN_EMAIL" "$CONFIG_DIR/piper.env" | cut -d'=' -f2)
+        ADMIN_PASSWORD=$(grep "ADMIN_PASSWORD" "$CONFIG_DIR/piper.env" | cut -d'=' -f2)
+        
+        if [ -n "$ADMIN_EMAIL" ] && [ -n "$ADMIN_PASSWORD" ]; then
+            log_info "Found admin credentials in piper.env, deploying admin creation job..."
+            
+            # Get stack name from swarm.env if available
+            STACK_NAME="piper"
+            if [ -f "$CONFIG_DIR/swarm.env" ]; then
+                TEMP_STACK_NAME=$(grep "^SWARM_STACK_NAME=" "$CONFIG_DIR/swarm.env" | cut -d'=' -f2)
+                if [ -n "$TEMP_STACK_NAME" ]; then
+                    STACK_NAME=$TEMP_STACK_NAME
+                fi
+            fi
+            
+            COMPONENTS_DIR="$(dirname "$(dirname "$script_dir")")/components"
+            log_info "Deploying admin user creation job..."
+            docker stack deploy -c "$COMPONENTS_DIR/jobs/admin-init-job.yaml" ${STACK_NAME}
+            
+            # Wait a bit for the job to start
+            log_info "Admin user creation job is running..."
+            sleep 20
+            
+            log_info "Admin user creation completed with email: $ADMIN_EMAIL"
+        else
+            log_warning "Admin credentials not found in piper.env, skipping admin user creation"
+        fi
+    else
+        log_warning "piper.env file not found at $CONFIG_DIR/piper.env, skipping admin user creation"
+    fi
+    
+    log_info "Admin user setup completed."
+}
 
 post_installation() {
-    setup_seaweedfs
+    # setup_seaweedfs
+    # setup_mongodb
+    create_admin
 }

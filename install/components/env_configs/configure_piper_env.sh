@@ -17,12 +17,14 @@ configure_piper_env() {
         redis_secret=$(generate_random_hex 16)
         s3_access_key=$(generate_random_hex 16)
         s3_secret_key=$(generate_random_hex 16)
+        admin_password=$(generate_random_password 8)
         
         # Update the piper.env file with generated secrets
         sed -i "s/JWT_SECRET=<auto generate>/JWT_SECRET=$jwt_secret/" "$config_dir/piper.env"
         sed -i "s/REDIS_SECRET_KEY=<auto generate>/REDIS_SECRET_KEY=$redis_secret/" "$config_dir/piper.env"
         sed -i "s/S3_ACCESS_KEY_ID=<auto generate>/S3_ACCESS_KEY_ID=$s3_access_key/" "$config_dir/piper.env"
         sed -i "s/S3_SECRET_ACCESS_KEY=<auto generate>/S3_SECRET_ACCESS_KEY=$s3_secret_key/" "$config_dir/piper.env"
+        sed -i "s/ADMIN_PASSWORD=<auto generate>/ADMIN_PASSWORD=$admin_password/" "$config_dir/piper.env"
         
         # Get domain from swarm.env and format URLs
         if [ -f "$config_dir/swarm.env" ]; then
@@ -48,7 +50,13 @@ configure_piper_env() {
         sed -i "s|^S3_BASE_URL=.*$|S3_BASE_URL=$s3_base_url|" "$config_dir/piper.env"
         log_info "URLs configured: BASE_URL=$base_url, S3_BASE_URL=$s3_base_url"
         
-        log_info "piper.env configured successfully with random secrets and URLs."
+        # Configure admin email
+        read -p "Enter admin email (e.g., admin@example.com): " admin_email
+        sed -i "s|^ADMIN_EMAIL=.*$|ADMIN_EMAIL=$admin_email|" "$config_dir/piper.env"
+        log_info "Admin email configured: ADMIN_EMAIL=$admin_email"
+        log_info "Admin password auto-generated. Make sure to save this password: $admin_password"
+        
+        log_info "piper.env configured successfully with random secrets, URLs, and admin credentials."
     else
         log_info "piper.env already exists."
     fi

@@ -1,0 +1,22 @@
+---
+networks:
+  database:
+    driver: overlay
+
+services:
+  admin-init:
+    image: ghcr.io/my-piper/piper:${PIPER_IMAGE_TAG}
+    env_file:
+      - ../../config/piper.env
+    networks:
+      - database
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["npm run cli users add admin $${ADMIN_EMAIL} $${ADMIN_PASSWORD} admin"]
+    deploy:
+      mode: replicated-job
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      placement:
+        constraints:
+          - "node.role==manager"
