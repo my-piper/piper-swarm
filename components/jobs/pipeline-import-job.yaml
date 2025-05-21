@@ -1,0 +1,23 @@
+---
+networks:
+  database:
+    driver: overlay
+
+
+services:
+  pipeline-import:
+    image: ghcr.io/my-piper/piper:${PIPER_IMAGE_TAG}
+    env_file:
+      - ../../config/piper.env
+    networks:
+      - database
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["npm run cli pipelines import admin https://huggingface.co/PiperMy/Pipelines/resolve/main/pipelines/generate-free-image.yaml"]
+    deploy:
+      mode: replicated-job
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      placement:
+        constraints:
+          - "node.role==manager"

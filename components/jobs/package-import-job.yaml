@@ -1,0 +1,22 @@
+---
+networks:
+  database:
+    driver: overlay
+
+services:
+  package-import:
+    image: ghcr.io/my-piper/piper:${PIPER_IMAGE_TAG}
+    env_file:
+      - ../../config/piper.env
+    networks:
+      - database
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["npm run cli packages import https://huggingface.co/PiperMy/Node-Packages/resolve/main/gpt4free.yaml"]
+    deploy:
+      mode: replicated-job
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      placement:
+        constraints:
+          - "node.role==manager"

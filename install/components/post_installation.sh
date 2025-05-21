@@ -115,8 +115,62 @@ create_admin() {
     log_info "Admin user setup completed."
 }
 
+import_packages() {
+    log_warning "Importing packages for Piper..."
+    
+    # Get configuration directory path
+    CONFIG_DIR="$(dirname "$(dirname "$script_dir")")/config"
+    
+    # Get stack name from swarm.env if available
+    STACK_NAME="piper"
+    if [ -f "$CONFIG_DIR/swarm.env" ]; then
+        TEMP_STACK_NAME=$(grep "^SWARM_STACK_NAME=" "$CONFIG_DIR/swarm.env" | cut -d'=' -f2)
+        if [ -n "$TEMP_STACK_NAME" ]; then
+            STACK_NAME=$TEMP_STACK_NAME
+        fi
+    fi
+    
+    COMPONENTS_DIR="$(dirname "$(dirname "$script_dir")")/components"
+    log_info "Deploying package import job..."
+    docker stack deploy -c "$COMPONENTS_DIR/jobs/package-import-job.yaml" ${STACK_NAME}
+    
+    # Wait a bit for the job to start
+    log_info "Package import job is running..."
+    sleep 20
+    
+    log_info "Package import completed."
+}
+
+import_pipelines() {
+    log_warning "Importing pipelines for Piper..."
+    
+    # Get configuration directory path
+    CONFIG_DIR="$(dirname "$(dirname "$script_dir")")/config"
+    
+    # Get stack name from swarm.env if available
+    STACK_NAME="piper"
+    if [ -f "$CONFIG_DIR/swarm.env" ]; then
+        TEMP_STACK_NAME=$(grep "^SWARM_STACK_NAME=" "$CONFIG_DIR/swarm.env" | cut -d'=' -f2)
+        if [ -n "$TEMP_STACK_NAME" ]; then
+            STACK_NAME=$TEMP_STACK_NAME
+        fi
+    fi
+    
+    COMPONENTS_DIR="$(dirname "$(dirname "$script_dir")")/components"
+    log_info "Deploying pipeline import job..."
+    docker stack deploy -c "$COMPONENTS_DIR/jobs/pipeline-import-job.yaml" ${STACK_NAME}
+    
+    # Wait a bit for the job to start
+    log_info "Pipeline import job is running..."
+    sleep 20
+    
+    log_info "Pipeline import completed."
+}
+
 post_installation() {
-    # setup_seaweedfs
-    # setup_mongodb
+    setup_seaweedfs
+    setup_mongodb
     create_admin
+    import_packages
+    import_pipelines
 }
