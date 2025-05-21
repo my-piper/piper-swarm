@@ -4,12 +4,30 @@
 # Source utils
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$script_dir/utils.sh"
+source "$script_dir/wait_for_service.sh"
 
 setup_seaweedfs() {
     log_warning "Configuring SeaweedFS buckets and S3 access..."
     
     # Get configuration directory path
     CONFIG_DIR="$(dirname "$(dirname "$script_dir")")/config"
+    
+    # Get stack name from swarm.env if available
+    STACK_NAME="piper"
+    if [ -f "$CONFIG_DIR/swarm.env" ]; then
+        TEMP_STACK_NAME=$(grep "^SWARM_STACK_NAME=" "$CONFIG_DIR/swarm.env" | cut -d'=' -f2)
+        if [ -n "$TEMP_STACK_NAME" ]; then
+            STACK_NAME=$TEMP_STACK_NAME
+        fi
+    fi
+    
+    # Wait for SeaweedFS master service to be running
+    log_info "Waiting for SeaweedFS master service to be running..."
+    wait_for_service "$STACK_NAME" "seaweedfs-master" 300 5 || {
+        log_error "SeaweedFS master service failed to start. Exiting."
+        return 1
+    }
+    log_info "SeaweedFS master service is now running!"
     
     # Extract S3 keys from piper.env if it exists
     if [ -f "$CONFIG_DIR/piper.env" ]; then
@@ -61,6 +79,14 @@ setup_mongodb() {
             STACK_NAME=$TEMP_STACK_NAME
         fi
     fi
+    
+    # Wait for MongoDB service to be running
+    log_info "Waiting for MongoDB service to be running..."
+    wait_for_service "$STACK_NAME" "mongodb" 300 5 || {
+        log_error "MongoDB service failed to start. Exiting."
+        return 1
+    }
+    log_info "MongoDB service is now running!"
     
     COMPONENTS_DIR="$(dirname "$(dirname "$script_dir")")/components"
     log_info "Deploying MongoDB initialization job..."
@@ -167,9 +193,35 @@ import_pipelines() {
     log_info "Pipeline import completed."
 }
 
+wait_for_piper_backend() {
+    log_warning "Waiting for Piper backend service..."
+    
+    # Get configuration directory path
+    CONFIG_DIR="$(dirname "$(dirname "$script_dir")")/config"
+    
+    # Get stack name from swarm.env if available
+    STACK_NAME="piper"
+    if [ -f "$CONFIG_DIR/swarm.env" ]; then
+        TEMP_STACK_NAME=$(grep "^SWARM_STACK_NAME=" "$CONFIG_DIR/swarm.env" | cut -d'=' -f2)
+        if [ -n "$TEMP_STACK_NAME" ]; then
+            STACK_NAME=$TEMP_STACK_NAME
+        fi
+    fi
+    
+    # Wait for Piper backend service to be running
+    log_info "Waiting for Piper backend service to be running..."
+    wait_for_service "$STACK_NAME" "backend" 300 5 || {
+        log_error "Piper backend service failed to start. Exiting."
+        return 1
+    }
+    log_info "Piper backend service is now running!"
+}
+
 post_installation() {
     setup_seaweedfs
     setup_mongodb
+
+    wait_for_piper_backend
     create_admin
     import_packages
     import_pipelines

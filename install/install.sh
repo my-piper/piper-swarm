@@ -27,16 +27,15 @@ check_prerequisites
 # Get the configuration directory path
 CONFIG_DIR="$(dirname "$INSTALL_DIR")/config"
 
-# # Configure environment files
+# Configure environment files
 configure_env_files "$CONFIG_DIR"
 
-# # Set up Docker node labels
+# Set up Docker node labels
 setup_node_labels
 
 # # # Deploy the stack
-# log_info "Deploying the stack..."
+log_info "Deploying the stack..."
 make up
-
 
 # Run post-installation tasks
 post_installation
