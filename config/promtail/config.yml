@@ -26,7 +26,7 @@ scrape_configs:
       - static_labels:
           env: ${ENV}
           project: ${PROJECT}
-          component: piper-backend
+          job: piper-backend
   - job_name: piper-worker
     docker_sd_configs:
       - host: unix:///var/run/docker.sock
@@ -44,7 +44,7 @@ scrape_configs:
       - static_labels:
           env: ${ENV}
           project: ${PROJECT}
-          component: piper-worker
+          job: piper-worker
   - job_name: piper-periodic
     docker_sd_configs:
       - host: unix:///var/run/docker.sock
@@ -62,5 +62,5 @@ scrape_configs:
       - static_labels:
           env: ${ENV}
           project: ${PROJECT}
-          component: piper-periodic
+          job: piper-periodic
 
