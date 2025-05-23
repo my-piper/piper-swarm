@@ -3,7 +3,6 @@ networks:
   database:
     driver: overlay
 
-
 services:
   pipeline-import:
     image: ghcr.io/my-piper/piper:${PIPER_IMAGE_TAG}
