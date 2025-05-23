@@ -4,13 +4,13 @@ networks:
     driver: overlay
 
 services:
-  mongo-init:
+  clickhouse-init:
     image: ghcr.io/my-piper/piper:${PIPER_IMAGE_TAG}
     env_file:
       - ../../config/piper.env
     networks:
       - database
-    command: ["mongo-migrate"]
+    command: ["clickhouse-migrate"]
     deploy:
       mode: replicated-job
       restart_policy:

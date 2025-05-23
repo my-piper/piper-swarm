@@ -11,8 +11,11 @@ is_service_running() {
     local service_name="$2"
     local full_service_name="${stack_name}_${service_name}"
     
-    # Check if service exists and is running with at least one replica
-    running_replicas=$(docker service ls --filter "name=${full_service_name}" --format "{{.Replicas}}" | grep -E '[0-9]+/[0-9]+' | cut -d'/' -f1)
+    # Use a more precise approach to ensure exact name match
+    # Get all services and filter with grep for exact service name
+    running_replicas=$(docker service ls --format "{{.Name}} {{.Replicas}}" | grep "^${full_service_name} " | awk '{print $2}' | grep -E '[0-9]+/[0-9]+' | cut -d'/' -f1)
+
+    echo "Running replicas: [$running_replicas]"
     
     if [ -z "$running_replicas" ]; then
         # Service doesn't exist or has no replicas defined

@@ -8,8 +8,6 @@ INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Source all component scripts
 source "$INSTALL_DIR/components/check_prerequisites.sh"
-source "$INSTALL_DIR/components/setup_directories.sh"
-source "$INSTALL_DIR/components/clone_repository.sh"
 source "$INSTALL_DIR/components/configure_env_files.sh"
 source "$INSTALL_DIR/components/setup_node_labels.sh"
 source "$INSTALL_DIR/components/post_installation.sh"
@@ -21,7 +19,6 @@ echo -e "${YELLOW}This script will install and configure the Piper stack${NC}"
 
 # Execute installation steps
 check_prerequisites
-# setup_directories
 # clone_repository
 
 # Get the configuration directory path
@@ -34,9 +31,9 @@ configure_env_files "$CONFIG_DIR"
 setup_node_labels
 
 # # # Deploy the stack
-log_info "Deploying the stack..."
+# log_info "Deploying the stack..."
 make up
-
+ 
 # Run post-installation tasks
 post_installation
 

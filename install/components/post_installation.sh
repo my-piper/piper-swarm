@@ -80,14 +80,6 @@ setup_mongodb() {
         fi
     fi
     
-    # Wait for MongoDB service to be running
-    log_info "Waiting for MongoDB service to be running..."
-    wait_for_service "$STACK_NAME" "mongodb" 300 5 || {
-        log_error "MongoDB service failed to start. Exiting."
-        return 1
-    }
-    log_info "MongoDB service is now running!"
-    
     COMPONENTS_DIR="$(dirname "$(dirname "$script_dir")")/components"
     log_info "Deploying MongoDB initialization job..."
     docker stack deploy -c "$COMPONENTS_DIR/jobs/mongo-init-job.yaml" ${STACK_NAME}
@@ -97,6 +89,30 @@ setup_mongodb() {
     sleep 20
     
     log_info "MongoDB initialization completed."
+}
+
+setup_clickhouse() {
+    log_warning "Initializing Clickhouse for Piper..."
+    
+    # Get stack name from swarm.env if available
+    CONFIG_DIR="$(dirname "$(dirname "$script_dir")")/config"
+    STACK_NAME="piper"
+    if [ -f "$CONFIG_DIR/swarm.env" ]; then
+        TEMP_STACK_NAME=$(grep "^SWARM_STACK_NAME=" "$CONFIG_DIR/swarm.env" | cut -d'=' -f2)
+        if [ -n "$TEMP_STACK_NAME" ]; then
+            STACK_NAME=$TEMP_STACK_NAME
+        fi
+    fi
+    
+    COMPONENTS_DIR="$(dirname "$(dirname "$script_dir")")/components"
+    log_info "Deploying Clickhouse initialization job..."
+    docker stack deploy -c "$COMPONENTS_DIR/jobs/clickhouse-init-job.yaml" ${STACK_NAME}
+    
+    # Wait a bit for the job to start
+    log_info "Clickhouse initialization job is running..."
+    sleep 20
+    
+    log_info "Clickhouse initialization completed."
 }
 
 create_admin() {
@@ -219,9 +235,10 @@ wait_for_piper_backend() {
 
 post_installation() {
     setup_seaweedfs
-    setup_mongodb
 
     wait_for_piper_backend
+    setup_mongodb
+    setup_clickhouse
     create_admin
     import_packages
     import_pipelines
