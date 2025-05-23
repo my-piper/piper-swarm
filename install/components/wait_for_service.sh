@@ -15,8 +15,6 @@ is_service_running() {
     # Get all services and filter with grep for exact service name
     running_replicas=$(docker service ls --format "{{.Name}} {{.Replicas}}" | grep "^${full_service_name} " | awk '{print $2}' | grep -E '[0-9]+/[0-9]+' | cut -d'/' -f1)
 
-    echo "Running replicas: [$running_replicas]"
-    
     if [ -z "$running_replicas" ]; then
         # Service doesn't exist or has no replicas defined
         return 1

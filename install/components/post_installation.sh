@@ -6,6 +6,31 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$script_dir/utils.sh"
 source "$script_dir/wait_for_service.sh"
 
+# Export environment variables from swarm.env
+export_swarm_env() {
+    local CONFIG_DIR="$(dirname "$(dirname "$script_dir")")/config"
+    local SWARM_ENV_FILE="$CONFIG_DIR/swarm.env"
+    
+    if [ -f "$SWARM_ENV_FILE" ]; then
+        log_info "Exporting environment variables from swarm.env..."
+        
+        # Export all variables from swarm.env file
+        while IFS='=' read -r key value; do
+            # Skip empty lines and comments
+            if [[ -n "$key" && ! "$key" =~ ^[[:space:]]*# ]]; then
+                # Remove any quotes from the value
+                value=$(echo "$value" | sed 's/^"//; s/"$//')
+                export "$key=$value"
+            fi
+        done < "$SWARM_ENV_FILE"
+        
+        log_info "Environment variables exported successfully."
+    else
+        log_warning "swarm.env file not found at $SWARM_ENV_FILE"
+    fi
+}
+
+
 setup_seaweedfs() {
     log_warning "Configuring SeaweedFS buckets and S3 access..."
     
@@ -234,6 +259,8 @@ wait_for_piper_backend() {
 }
 
 post_installation() {
+    export_swarm_env
+
     setup_seaweedfs
 
     wait_for_piper_backend
