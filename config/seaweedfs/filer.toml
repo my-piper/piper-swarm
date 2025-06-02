@@ -5,4 +5,5 @@ superLargeDirectories = [
     "/buckets/artefacts",
     "/buckets/launches",
     "/buckets/assets",
+    "/buckets/outputs",
 ]
