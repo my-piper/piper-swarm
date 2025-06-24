@@ -162,6 +162,7 @@ services:
       start_period: 10s
       timeout: 10s
     deploy:
+      endpoint_mode: dnsrr
       placement:
         constraints:
           -  "node.role==manager"
