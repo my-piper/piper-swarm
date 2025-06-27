@@ -2,7 +2,8 @@
 
 volumes:
   mongo-data:
-    driver: overlay
+
+networks:
   monitoring:
     driver: overlay
 
