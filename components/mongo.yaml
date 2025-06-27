@@ -2,6 +2,9 @@
 
 volumes:
   mongo-data:
+    driver: overlay
+  monitoring:
+    driver: overlay
 
 services:
   mongo:
