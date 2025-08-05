@@ -3,6 +3,8 @@
 networks:
   ingress:
     driver: overlay
+  monitoring:
+    driver: overlay
 
 volumes:
   traefik-letsencrypt-data:

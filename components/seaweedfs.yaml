@@ -28,6 +28,8 @@ networks:
     driver: overlay
   seaweedfs:
     driver: overlay
+  monitoring:
+    driver: overlay
 
 volumes:
   seaweedfs-master-data:

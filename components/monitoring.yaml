@@ -17,10 +17,8 @@ services:
     env_file:
       - ../config/promtail/config.env
     command:
-      [
-        "-config.file=/etc/promtail/config.yml",
-        "-config.expand-env=true"
-      ]
+      - "-config.file=/etc/promtail/config.yml"
+      - "-config.expand-env=true"
     deploy:
       mode: global
 
@@ -38,6 +36,7 @@ services:
       - "--promscrape.config=/etc/prometheus/prometheus.yml"
       - "-envflag.enable"
       - "-envflag.prefix=VM_"
+      - "--remoteWrite.maxDiskUsagePerURL=1GB"
     deploy:
       placement:
         constraints:

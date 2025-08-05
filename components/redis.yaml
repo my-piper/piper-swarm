@@ -1,5 +1,11 @@
 ---
 
+networks:
+  monitoring:
+    driver: overlay
+  database:
+    driver: overlay
+
 volumes:
   redis-data:
 

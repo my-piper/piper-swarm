@@ -2,6 +2,9 @@
 
 networks:
   database:
+    driver: overlay
+  monitoring:
+    driver: overlay
 
 volumes:
   kafka-data:
