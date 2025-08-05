@@ -68,7 +68,7 @@ services:
         - "traefik.http.middlewares.security-headers.headers.sslRedirect=true"
         - "traefik.http.middlewares.security-headers.headers.contentTypeNosniff=true"
         - "traefik.http.middlewares.security-headers.headers.browserXssFilter=true"
-        - "traefik.http.middlewares.security-headers.headers.contentSecurityPolicy=default-src 'self'; img-src 'self' https: data:; media-src 'self' https: data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
+        - "traefik.http.middlewares.security-headers.headers.contentSecurityPolicy=default-src 'self'; img-src 'self' https: data:; media-src 'self' https: data:; script-src 'self' 'unsafe-inline' https://hcaptcha.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
         - "traefik.http.middlewares.security-headers.headers.referrerPolicy=same-origin"
         - "traefik.http.middlewares.security-headers.headers.permissionsPolicy=camera=(), microphone=()"
         - "traefik.http.middlewares.security-headers.headers.stsSeconds=31536000"
