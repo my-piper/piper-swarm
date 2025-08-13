@@ -127,3 +127,15 @@ services:
     networks:
       - seaweedfs
       - monitoring
+
+  exporter-redis-seaweedfs:
+    image: oliver006/redis_exporter:v1.54.0
+    environment:
+      REDIS_ADDR: seaweedfs-redis:6379
+    networks:
+      - monitoring
+      - seaweedfs
+    deploy:
+      labels:
+        - "prometheus-port=9121"
+        - "prometheus-job=redis-seaweedfs"

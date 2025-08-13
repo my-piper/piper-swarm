@@ -6,8 +6,8 @@
 
 from `weed shell` execute:
 ```shell
-fs.configure -locationPrefix=/buckets/artefacts/ -ttl=1d -volumeGrowthCount=1 -replication=000 -apply
-fs.configure -locationPrefix=/buckets/launches/ -ttl=14d -volumeGrowthCount=1 -replication=000 -apply
+fs.configure -locationPrefix=/buckets/artefacts/ -ttl=1h -volumeGrowthCount=1 -replication=000 -apply
+fs.configure -locationPrefix=/buckets/launches/ -ttl=1h -volumeGrowthCount=1 -replication=000 -apply
 fs.configure -locationPrefix=/buckets/assets/ -volumeGrowthCount=1 -replication=000 -apply
 
 s3.configure -user=anonymous -actions=Read:artefacts,Read:launches,Read:assets -apply
@@ -36,7 +36,6 @@ make status
 
 ```shell
 docker node update --label-add piper-worker=true production-2
-docker node update --label-add piper-worker=true production
-docker node update --label-add piper-worker=true development
+docker node update --label-add piper-chrome=true piper-next-3
 docker node update --label-rm app development 
 ```
