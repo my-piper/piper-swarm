@@ -27,7 +27,7 @@ services:
         condition: on-failure
 
   nocodb:
-    image: nocodb/nocodb:latest
+    image: nocodb/nocodb:0.264.4
     networks:
       - database
       - ingress
