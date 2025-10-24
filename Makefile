@@ -76,9 +76,9 @@ backup-clickhouse:
 	fi
 	@echo "Create backup Clickhouse from container ${CONTAINER_ID_CLICKHOUSE}..."
 	docker exec -i ${CONTAINER_ID_CLICKHOUSE} clickhouse-client --query "BACKUP DATABASE piper TO Disk('backups', 'clickhouse-backup')"
-	tar -czf ${BACKUP_DIR_CLICKHOUSE}/clickhouse-${DATE}.tar.gz -C /var/backups/clickhouse clickhouse-backup
+	tar -czf ${BACKUP_DIR_CLICKHOUSE}/clickhouse-${DATE}.tar.gz -C /var/backups/piper/clickhouse clickhouse-backup
 	ln -sfn ${BACKUP_DIR_CLICKHOUSE} ${LATEST_LINK_CLICKHOUSE}
-	rm -rf /var/backups/clickhouse/clickhouse-backup
+	rm -rf /var/backups/piper/clickhouse/clickhouse-backup
 	@echo "Backup Clickhouse completed successfully: ${BACKUP_DIR_CLICKHOUSE}/clickhouse-${DATE}.tar.gz"
 
 .PHONY: backup-redis
