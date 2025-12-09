@@ -1,13 +1,4 @@
 ---
-
-networks:
-  monitoring:
-    driver: overlay
-  backend:
-    driver: overlay
-  database:
-    driver: overlay
-
 x-piper: &piper
   image: ghcr.io/my-piper/piper:${PIPER_IMAGE_TAG}
   env_file:
@@ -34,8 +25,21 @@ x-worker: &worker
     - monitoring
     - database
     - services
+  volumes:
+    - piper-npm-cache:/root/.npm-cache
   deploy:
     <<: *worker-deploy
+
+volumes:
+  piper-npm-cache:
+
+networks:
+  monitoring:
+    driver: overlay
+  backend:
+    driver: overlay
+  database:
+    driver: overlay
 
 services:
   backend:
