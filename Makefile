@@ -1,7 +1,7 @@
 -include config/swarm.env
 export
 
-SWARM_SOURCES=$(shell find ./components -maxdepth 1 -name "*.yaml")
+SWARM_SOURCES=$(shell find ./components -name "*.yaml" -not -path "*/jobs/*")
 SWARM_FILES=$(patsubst %,-c %,$(SWARM_SOURCES))
 
 # envs for backup
@@ -14,13 +14,11 @@ BACKUP_DAY=$(shell date +%a)
 BACKUP_DIR_PG := /var/backups/piper/postgres/${BACKUP_DAY}
 BACKUP_DIR_MONGO := /var/backups/piper/mongo/${BACKUP_DAY}
 BACKUP_DIR_CLICKHOUSE := /var/backups/piper/clickhouse/${BACKUP_DAY}
-BACKUP_DIR_NCDATA := /var/backups/piper/nocodb-data/${BACKUP_DAY}
 BACKUP_DIR_REDIS := /var/backups/piper/redis/${BACKUP_DAY}
 
 LATEST_LINK_PG=/var/backups/piper/postgres/latest
 LATEST_LINK_MONGO=/var/backups/piper/mongo/latest
 LATEST_LINK_CLICKHOUSE=/var/backups/piper/clickhouse/latest
-LATEST_LINK_NCDATA=/var/backups/piper/nocodb-data/latest
 LATEST_LINK_REDIS=/var/backups/piper/redis/latest
 
 up:
@@ -92,15 +90,3 @@ backup-redis:
 		alpine cp /source/dump.rdb /backup/dump.rdb
 	ln -sfn ${BACKUP_DIR_REDIS} ${LATEST_LINK_REDIS}
 	@echo "Backup of redis completed: ${BACKUP_DIR_REDIS}/dump.rdb"
-
-.PHONY: backup-nocodb
-backup-nocodb:
-	@mkdir -p ${BACKUP_DIR_NCDATA}
-	rm -rf ${BACKUP_DIR_NCDATA}/*
-	@echo "Creating backup of nocodb-data volume..."
-	docker run --rm \
-		-v ${SWARM_STACK_NAME}_nocodb-data:/source:ro \
-		-v ${BACKUP_DIR_NCDATA}:/backup \
-		alpine tar -czf /backup/nocodb-data-${DATE}.tar.gz -C /source .
-	ln -sfn ${BACKUP_DIR_NCDATA} ${LATEST_LINK_NCDATA}
-	@echo "Backup of nocodb-data completed: ${BACKUP_DIR_NCDATA}/nocodb-data-${DATE}.tar.gz"
