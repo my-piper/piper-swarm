@@ -24,7 +24,7 @@ x-worker: &worker
   networks:
     - monitoring
     - database
-    - services
+    - deno
   volumes:
     - piper-npm-cache:/var/npm-cache
   deploy:
@@ -40,6 +40,8 @@ networks:
     driver: overlay
   database:
     driver: overlay
+  deno:
+    driver: overlay
 
 services:
   backend:
@@ -48,6 +50,7 @@ services:
       - monitoring
       - database
       - ingress
+      - deno
     healthcheck:
       test: curl --fail http://localhost/health || exit 1
       interval: 60s
@@ -153,35 +156,6 @@ services:
     deploy:
       <<: *worker-deploy
       replicas: ${UPDATE_PACKAGES_REPLICAS:-1}
-
-  chrome:
-    <<: *piper
-    networks:
-      - monitoring
-      - database
-      - services
-    command: ["chrome"]
-    healthcheck:
-      test: curl --fail http://localhost:9222/json/version || exit 1
-      interval: 60s
-      retries: 5
-      start_period: 10s
-      timeout: 10s
-    deploy:
-      endpoint_mode: dnsrr
-      placement:
-        constraints:
-          -  "node.labels.piper-chrome==true"
-      resources:
-        limits:
-          memory: 4g
-        reservations:
-          memory: 250m
-      replicas: 2
-      update_config:
-        parallelism: 1
-        delay: 5s
-        order: start-first
 
   periodic:
     <<: *piper

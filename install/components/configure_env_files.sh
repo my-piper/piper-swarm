@@ -8,8 +8,6 @@ source "$script_dir/utils.sh"
 # Source individual env config scripts
 source "$script_dir/env_configs/configure_swarm_env.sh"
 source "$script_dir/env_configs/configure_piper_env.sh"
-source "$script_dir/env_configs/configure_postgres_env.sh"
-source "$script_dir/env_configs/configure_nocodb_env.sh"
 source "$script_dir/env_configs/configure_metrics_env.sh"
 source "$script_dir/env_configs/configure_promtail_env.sh"
 
@@ -21,8 +19,6 @@ configure_env_files() {
     # Configure each environment file
     configure_swarm_env "$config_dir"
     configure_piper_env "$config_dir"
-    configure_postgres_env "$config_dir"
-    configure_nocodb_env "$config_dir"
     configure_metrics_env "$config_dir"
     configure_promtail_env "$config_dir"
     

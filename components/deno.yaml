@@ -1,0 +1,25 @@
+---
+
+networks:
+  deno:
+    driver: overlay
+
+services:
+  deno:
+    image: ghcr.io/my-piper/piper-deno:sha-fcfb6e9
+    networks:
+      - deno
+    environment:
+      - PER_WORKER_MEMORY_MB=128
+    deploy:
+      replicas: ${DENO_REPLICAS:-5}
+      update_config:
+        parallelism: 1
+        delay: 5s
+        order: start-first
+      resources:
+        limits:
+          memory: 128m
+        reservations:
+          memory: 128m
+

@@ -4,19 +4,13 @@ export
 SWARM_SOURCES=$(shell find ./components -name "*.yaml" -not -path "*/jobs/*")
 SWARM_FILES=$(patsubst %,-c %,$(SWARM_SOURCES))
 
-# envs for backup
-PG_USER=postgres
-PG_DB=nocodb
-
 DATE := $(shell date +%Y%m%d_%H%M%S)
 BACKUP_DAY=$(shell date +%a)
 
-BACKUP_DIR_PG := /var/backups/piper/postgres/${BACKUP_DAY}
 BACKUP_DIR_MONGO := /var/backups/piper/mongo/${BACKUP_DAY}
 BACKUP_DIR_CLICKHOUSE := /var/backups/piper/clickhouse/${BACKUP_DAY}
 BACKUP_DIR_REDIS := /var/backups/piper/redis/${BACKUP_DAY}
 
-LATEST_LINK_PG=/var/backups/piper/postgres/latest
 LATEST_LINK_MONGO=/var/backups/piper/mongo/latest
 LATEST_LINK_CLICKHOUSE=/var/backups/piper/clickhouse/latest
 LATEST_LINK_REDIS=/var/backups/piper/redis/latest
@@ -31,21 +25,6 @@ status:
 install:
 	./install/install.sh
 
-.PHONY: backup-db
-backup-db:
-	@mkdir -p ${BACKUP_DIR_PG}
-	rm -rf ${BACKUP_DIR_PG}/*
-	@echo "Checking for Postgres container..."
-	$(eval CONTAINER_ID_PG := $(shell docker ps --filter "label=com.docker.swarm.service.name=${SWARM_STACK_NAME}_postgres" -q | head -n1))
-	@if [ -z "${CONTAINER_ID_PG}" ]; then \
-		echo "Error: Postgres container not found. Is the stack running?"; \
-		exit 1; \
-	fi
-	@echo "Create backup Postgres from container ${CONTAINER_ID_PG}..."
-	docker exec -i ${CONTAINER_ID_PG} pg_dump -U ${PG_USER} -d ${PG_DB} -Fc \
-		> ${BACKUP_DIR_PG}/db_${DATE}.dump
-	ln -sfn ${BACKUP_DIR_PG} ${LATEST_LINK_PG}
-	@echo "Backup Postgres completed successfully: ${BACKUP_DIR_PG}/db_${DATE}.dump"
 
 .PHONY: backup-mongo
 backup-mongo:
