@@ -1,19 +1,30 @@
 -include config/swarm.env
 export
 
-SWARM_SOURCES=$(shell find ./components -name "*.yaml" -not -path "*/jobs/*")
+SWARM_SOURCES=$(shell find ./components -maxdepth 1 -name "*.yaml")
 SWARM_FILES=$(patsubst %,-c %,$(SWARM_SOURCES))
+PROJECT_ROOT := $(shell dirname $(CURDIR))
+DEVOPS_DIR   := $(shell basename $(CURDIR))
+
+# envs for backup
+PG_USER=postgres
+PG_DB=nocodb
 
 DATE := $(shell date +%Y%m%d_%H%M%S)
 BACKUP_DAY=$(shell date +%a)
+BACKUP_DIR=/var/backups/piper
 
-BACKUP_DIR_MONGO := /var/backups/piper/mongo/${BACKUP_DAY}
-BACKUP_DIR_CLICKHOUSE := /var/backups/piper/clickhouse/${BACKUP_DAY}
-BACKUP_DIR_REDIS := /var/backups/piper/redis/${BACKUP_DAY}
+BACKUP_DIR_MONGO := ${BACKUP_DIR}/mongo/${BACKUP_DAY}
+BACKUP_DIR_CLICKHOUSE := ${BACKUP_DIR}/clickhouse/${BACKUP_DAY}
+BACKUP_DIR_REDIS := ${BACKUP_DIR}/redis/${BACKUP_DAY}
+BACKUP_DIR_CONFIGS:= ${BACKUP_DIR}/configs/${BACKUP_DAY}
 
-LATEST_LINK_MONGO=/var/backups/piper/mongo/latest
-LATEST_LINK_CLICKHOUSE=/var/backups/piper/clickhouse/latest
-LATEST_LINK_REDIS=/var/backups/piper/redis/latest
+BACKUP_LATEST_MONGO=${BACKUP_DIR}/mongo/latest
+BACKUP_LATEST_CLICKHOUSE=${BACKUP_DIR}/clickhouse/latest
+BACKUP_LATEST_REDIS=${BACKUP_DIR}/redis/latest
+BACKUP_LATEST_CONFIGS=${BACKUP_DIR}/configs/latest
+
+BACKUP_CONFIG_ARCHIVE=${BACKUP_DIR_CONFIGS}/$(shell date +%d%m%Y_%H-%M).tar.gz
 
 up:
 	docker stack deploy ${SWARM_FILES} ${SWARM_STACK_NAME} --with-registry-auth
@@ -24,7 +35,6 @@ status:
 .PHONY: install
 install:
 	./install/install.sh
-
 
 .PHONY: backup-mongo
 backup-mongo:
@@ -38,7 +48,7 @@ backup-mongo:
 	fi
 	@echo "Create backup MONGO from container ${CONTAINER_ID_MONGO}..."
 	docker exec -i ${CONTAINER_ID_MONGO} /usr/bin/mongodump -j 12 --gzip --archive > ${BACKUP_DIR_MONGO}/db_${DATE}.dump
-	ln -sfn ${BACKUP_DIR_MONGO} ${LATEST_LINK_MONGO}
+	ln -sfn ${BACKUP_DIR_MONGO} ${BACKUP_LATEST_MONGO}
 	@echo "Backup Mongo completed successfully: $(BACKUP_DIR_MONGO)/db_${DATE}.dump"
 
 .PHONY: backup-clickhouse
@@ -54,7 +64,7 @@ backup-clickhouse:
 	@echo "Create backup Clickhouse from container ${CONTAINER_ID_CLICKHOUSE}..."
 	docker exec -i ${CONTAINER_ID_CLICKHOUSE} clickhouse-client --query "BACKUP DATABASE piper TO Disk('backups', 'clickhouse-backup')"
 	tar -czf ${BACKUP_DIR_CLICKHOUSE}/clickhouse-${DATE}.tar.gz -C /var/backups/piper/clickhouse clickhouse-backup
-	ln -sfn ${BACKUP_DIR_CLICKHOUSE} ${LATEST_LINK_CLICKHOUSE}
+	ln -sfn ${BACKUP_DIR_CLICKHOUSE} ${BACKUP_LATEST_CLICKHOUSE}
 	rm -rf /var/backups/piper/clickhouse/clickhouse-backup
 	@echo "Backup Clickhouse completed successfully: ${BACKUP_DIR_CLICKHOUSE}/clickhouse-${DATE}.tar.gz"
 
@@ -67,5 +77,17 @@ backup-redis:
 		-v ${SWARM_STACK_NAME}_redis-data:/source:ro \
 		-v ${BACKUP_DIR_REDIS}:/backup \
 		alpine cp /source/dump.rdb /backup/dump.rdb
-	ln -sfn ${BACKUP_DIR_REDIS} ${LATEST_LINK_REDIS}
+	ln -sfn ${BACKUP_DIR_REDIS} ${BACKUP_LATEST_REDIS}
 	@echo "Backup of redis completed: ${BACKUP_DIR_REDIS}/dump.rdb"
+
+.PHONY: backup-configs
+backup-configs:
+	@echo "Backing up Swarm configurations..."
+	mkdir -p ${BACKUP_DIR_CONFIGS}
+	rm -rf ${BACKUP_DIR_CONFIGS}/*
+	tar -czf ${BACKUP_CONFIG_ARCHIVE} \
+		--exclude='.git' \
+		-C $(PROJECT_ROOT) \
+		$(DEVOPS_DIR)/
+	ln -sfn ${BACKUP_DIR_CONFIGS} ${BACKUP_LATEST_CONFIGS}
+	@echo "Config backup created: ${BACKUP_CONFIG_ARCHIVE}"

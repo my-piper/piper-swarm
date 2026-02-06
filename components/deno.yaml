@@ -6,7 +6,7 @@ networks:
 
 services:
   deno:
-    image: ghcr.io/my-piper/piper-deno:sha-fcfb6e9
+    image: ghcr.io/my-piper/piper-deno:sha-fc30f3a
     networks:
       - deno
     environment:
@@ -19,7 +19,7 @@ services:
         order: start-first
       resources:
         limits:
-          memory: 128m
+          memory: 512m
         reservations:
-          memory: 128m
+          memory: 512m
 
