@@ -6,10 +6,6 @@ SWARM_FILES=$(patsubst %,-c %,$(SWARM_SOURCES))
 PROJECT_ROOT := $(shell dirname $(CURDIR))
 DEVOPS_DIR   := $(shell basename $(CURDIR))
 
-# envs for backup
-PG_USER=postgres
-PG_DB=nocodb
-
 DATE := $(shell date +%Y%m%d_%H%M%S)
 BACKUP_DAY=$(shell date +%a)
 BACKUP_DIR=/var/backups/piper
