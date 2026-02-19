@@ -1,7 +1,7 @@
 -include config/swarm.env
 export
 
-SWARM_SOURCES=$(shell find ./components -maxdepth 1 -name "*.yaml")
+SWARM_SOURCES=$(shell find ./components -name "*.yaml" ! -path "*/jobs/*")
 SWARM_FILES=$(patsubst %,-c %,$(SWARM_SOURCES))
 PROJECT_ROOT := $(shell dirname $(CURDIR))
 DEVOPS_DIR   := $(shell basename $(CURDIR))
