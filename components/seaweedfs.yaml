@@ -1,7 +1,7 @@
 ---
 
 x-seaweedfs: &seaweedfs
-  image: chrislusf/seaweedfs:3.81
+  image: chrislusf/seaweedfs:3.99
 
 x-seaweedfs-volume: &seaweedfs-volume
   <<: *seaweedfs
@@ -18,7 +18,7 @@ x-seaweedfs-volume: &seaweedfs-volume
   deploy:
     placement:
       constraints:
-        - "node.role==manager"
+        - node.labels.seaweedfs==true
     labels:
       - "prometheus-job=seaweedfs-volume"
       - "prometheus-port=9327"
@@ -57,7 +57,7 @@ services:
     deploy:
       placement:
         constraints:
-          - "node.role==manager"
+          - node.labels.seaweedfs==true
       labels:
         - "prometheus-job=seaweedfs-master"
         - "prometheus-port=9327"
@@ -104,7 +104,7 @@ services:
       replicas: 1
       placement:
         constraints:
-          - "node.role==manager"
+          - node.labels.seaweedfs-filer==true
       labels:
         - "prometheus-job=seaweedfs-filer"
         - "prometheus-port=9327"
@@ -117,11 +117,11 @@ services:
         - "traefik.docker.network=piper_ingress"
 
   seaweedfs-redis:
-    image: redis:7.4.0
+    image: redis:8.6.2
     deploy:
       placement:
         constraints:
-          -  "node.role==manager"
+          - node.labels.seaweedfs==true
     volumes:
       - seaweedfs-redis-data:/data
     networks:
@@ -137,5 +137,5 @@ services:
       - seaweedfs
     deploy:
       labels:
-        - "prometheus-port=9121"
-        - "prometheus-job=redis-seaweedfs"
+        - prometheus-port=9121
+        - prometheus-job=redis-seaweedfs

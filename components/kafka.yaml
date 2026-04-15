@@ -11,7 +11,7 @@ volumes:
 
 services:
   kafka:
-    image: confluentinc/cp-kafka:7.7.1
+    image: confluentinc/cp-kafka:7.7.8
     networks:
       - database
     volumes:
@@ -21,7 +21,7 @@ services:
     deploy:
       placement:
         constraints:
-          -  "node.role==manager"
+          - node.labels.kafka==true
 
   exporter-kafka:
     image: danielqsj/kafka-exporter:v1.8.0

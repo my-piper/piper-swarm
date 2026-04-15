@@ -35,7 +35,16 @@ make status
 ## Docker
 
 ```shell
-docker node update --label-add piper-worker=true production-2
-docker node update --label-add piper-chrome=true piper-next-3
-docker node update --label-rm app development 
+docker node update --label-add clickhouse=true art-piper-1
+docker node update --label-add imgproxy=true art-piper-1
+docker node update --label-add kafka=true art-piper-1
+docker node update --label-add mongo=true art-piper-1
+docker node update --label-add piper-worker=true art-piper-2
+docker node update --label-add piper-backend=true art-piper-1
+docker node update --label-add piper-sockets=true art-piper-1
+docker node update --label-add piper-periodic=true art-piper-2
+docker node update --label-add piper-oauth=true art-piper-1
+docker node update --label-add redis=true art-piper-1
+docker node update --label-add seaweedfs=true art-piper-1
+docker node update --label-add seaweedfs-filer=true art-piper-1
 ```

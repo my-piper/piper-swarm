@@ -11,7 +11,7 @@ networks:
 
 services:
   mongo:
-    image: mongo:7.0.11
+    image: mongo:8.2.6
     networks:
       - database
     volumes:
@@ -21,7 +21,7 @@ services:
     deploy:
       placement:
         constraints:
-          -  "node.role==manager"
+          - node.labels.mongo==true
 
   exporter-mongo:
     image: percona/mongodb_exporter:0.41.2

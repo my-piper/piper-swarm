@@ -1,14 +1,18 @@
 ---
 
+networks:
+  ingress:
+    driver: overlay
+
 services:
   imgproxy:
-    image: darthsim/imgproxy:v3.18.2
+    image: darthsim/imgproxy:v3.31.2
     networks:
       - ingress
     deploy:
       placement:
         constraints:
-          -  "node.role==manager"
+          - node.labels.imgproxy==true
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.imgproxy.entrypoints=http"

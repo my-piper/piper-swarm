@@ -19,19 +19,18 @@ echo -e "${YELLOW}This script will install and configure the Piper stack${NC}"
 
 # Execute installation steps
 check_prerequisites
-# clone_repository
 
 # Get the configuration directory path
 CONFIG_DIR="$(dirname "$INSTALL_DIR")/config"
 
 # Configure environment files
-configure_env_files "$CONFIG_DIR"
+# configure_env_files "$CONFIG_DIR"
 
 # Set up Docker node labels
-setup_node_labels
+# setup_node_labels
 
-# # # Deploy the stack
-# log_info "Deploying the stack..."
+# Deploy the stack
+log_info "Deploying the stack..."
 make up
  
 # Run post-installation tasks
