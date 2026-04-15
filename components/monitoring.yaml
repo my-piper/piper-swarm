@@ -11,13 +11,13 @@ services:
   promtail:
     image: grafana/promtail:2.9.0
     volumes:
-      - ../config/promtail/config.yml:/etc/promtail/config.yml:ro
+      - ../config/promtail/config.yaml:/etc/promtail/config.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/lib/docker/containers:/var/lib/docker/containers
     env_file:
       - ../config/promtail/config.env
     command:
-      - "-config.file=/etc/promtail/config.yml"
+      - "-config.file=/etc/promtail/config.yaml"
       - "-config.expand-env=true"
     deploy:
       mode: global
@@ -29,11 +29,11 @@ services:
     networks:
       - monitoring
     volumes:
-      - ../config/metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ../config/metrics/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
       - vmagent-data:/vmagentdata
       - /var/run/docker.sock:/var/run/docker.sock
     command:
-      - "--promscrape.config=/etc/prometheus/prometheus.yml"
+      - "--promscrape.config=/etc/prometheus/prometheus.yaml"
       - "-envflag.enable"
       - "-envflag.prefix=VM_"
       - "--remoteWrite.maxDiskUsagePerURL=1GB"
