@@ -10,6 +10,7 @@ INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$INSTALL_DIR/components/check_prerequisites.sh"
 source "$INSTALL_DIR/components/configure_env_files.sh"
 source "$INSTALL_DIR/components/setup_node_labels.sh"
+source "$INSTALL_DIR/components/setup_dirs.sh"
 source "$INSTALL_DIR/components/post_installation.sh"
 
 
@@ -24,10 +25,13 @@ check_prerequisites
 CONFIG_DIR="$(dirname "$INSTALL_DIR")/config"
 
 # Configure environment files
-# configure_env_files "$CONFIG_DIR"
+configure_env_files "$CONFIG_DIR"
 
 # Set up Docker node labels
 # setup_node_labels
+
+# Set up required host directories
+setup_dirs
 
 # Deploy the stack
 log_info "Deploying the stack..."
