@@ -52,3 +52,11 @@ docker node update --label-add redis=true art-piper-1
 docker node update --label-add seaweedfs=true art-piper-1
 docker node update --label-add seaweedfs-filer=true art-piper-1
 ```
+
+## Monitoring
+
+`vmagent` scrapes every service on the `monitoring` network that has
+`prometheus-job` and `prometheus-port` deploy labels. The `deno` service is
+scraped as `job="deno"` on port `9464` (`/metrics`); its Grafana dashboard is
+`grafana/piper-deno.json` in the
+[piper-deno](https://github.com/my-piper/piper-deno) repository.
