@@ -2,17 +2,23 @@
 networks:
   deno:
     driver: overlay
+  monitoring:
+    driver: overlay
 
 services:
   deno:
-    image: ghcr.io/my-piper/piper-deno:sha-69669c3
+    image: ghcr.io/my-piper/piper-deno:sha-40328a1
     networks:
       - deno
+      - monitoring
     environment:
       - PER_WORKER_MEMORY_MB=128
       - ALLOW_IMPORT_HOSTS=registry:8085
     deploy:
       replicas: ${DENO_REPLICAS:-5}
+      labels:
+        - "prometheus-job=deno"
+        - "prometheus-port=9464"
       update_config:
         parallelism: 1
         delay: 5s
