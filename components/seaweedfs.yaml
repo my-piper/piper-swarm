@@ -1,5 +1,4 @@
 ---
-
 x-seaweedfs: &seaweedfs
   image: chrislusf/seaweedfs:3.99
 
@@ -50,7 +49,7 @@ services:
       - "-ip.bind=0.0.0.0"
       - "-metricsPort=9327"
       - "-mdir=/data"
-      - "-volumeSizeLimitMB=64"
+      - "-volumeSizeLimitMB=512"
       - "-defaultReplication=000"
     volumes:
       - seaweedfs-master-data:/data
@@ -89,8 +88,6 @@ services:
       - seaweedfs
       - monitoring
       - ingress
-    ports:
-      - "8333:8333"
     command:
       - "filer"
       - "-s3"
@@ -101,7 +98,6 @@ services:
     volumes:
       - ../config/seaweedfs/filer.toml:/etc/seaweedfs/filer.toml:ro
     deploy:
-      replicas: 1
       placement:
         constraints:
           - node.labels.seaweedfs-filer==true
@@ -111,7 +107,7 @@ services:
         - "traefik.enable=true"
         - "traefik.http.routers.seaweedfs-s3.entrypoints=http"
         - "traefik.http.routers.seaweedfs-s3.rule=Host(`${DOMAIN}`) && PathPrefix(`/storage/`)"
-        - "traefik.http.middlewares.seaweedfs-s3-strip.stripprefix.prefixes=/storage"
+        - "traefik.http.middlewares.seaweedfs-s3-strip.stripprefix.prefixes=/storage/"
         - "traefik.http.routers.seaweedfs-s3.middlewares=seaweedfs-s3-strip"
         - "traefik.http.services.seaweedfs-s3.loadbalancer.server.port=8333"
         - "traefik.docker.network=piper_ingress"

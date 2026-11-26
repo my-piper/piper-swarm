@@ -6,8 +6,8 @@ x-piper: &piper
 
 x-worker-deploy: &worker-deploy
   placement:
-      constraints:
-        - node.labels.piper-worker==true
+    constraints:
+      - node.labels.piper-worker==true
   resources:
     limits:
       memory: 4g
@@ -245,6 +245,28 @@ services:
       labels:
         - "prometheus-port=80"
         - "prometheus-job=piper"
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 5s
+        order: start-first
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 250m
+
+  registry:
+    <<: *piper
+    networks:
+      - monitoring
+      - database
+      - deno
+    command: ["registry"]
+    deploy:
+      labels:
+        - "prometheus-port=80"
+        - "prometheus-job=registry"
       replicas: 1
       update_config:
         parallelism: 1

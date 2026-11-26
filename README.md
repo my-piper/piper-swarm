@@ -1,19 +1,23 @@
-# DevOps 
+# DevOps
 
 ## Setup
 
 ### SeaweedFS
 
 from `weed shell` execute:
+
 ```shell
 fs.configure -locationPrefix=/buckets/artefacts/ -ttl=2w -volumeGrowthCount=1 -replication=000 -apply
 fs.configure -locationPrefix=/buckets/assets/ -ttl=6M -volumeGrowthCount=1 -replication=000 -apply
 fs.configure -locationPrefix=/buckets/outputs/ -ttl=2w -volumeGrowthCount=1 -replication=000 -apply
 
 s3.configure -user=anonymous -actions=Read:artefacts,Read:outputs,Read:assets -apply
-s3.configure -access_key=${S3_ACCESS_KEY} -secret_key=${S3_SECRET_KEY} -user=piper -actions=Read,Write:artefacts,Read,Write:outputs,Read,Write:assets -apply
-```
+s3.configure -access_key=${S3_ACCESS_KEY} -secret_key=${S3_SECRET_KEY} -user=piper -actions=Read:artefacts,Write:artefacts,Read:outputs,Write:outputs,Read:assets,Write:assets,Read:registry,Write:registry -apply
 
+s3.configure -access_key=4f892d9edc9331b338f7b0ac204c6e88 -secret_key=f9fd903b3a26ee66222d3794eb2a4827 -user=piper -actions=Read:artefacts,Write:artefacts,Read:outputs,Write:outputs,Read:assets,Write:assets,Read:registry,Write:registry -apply
+
+s3.configure -user=piper -delete -apply
+```
 
 ## Load configs
 
